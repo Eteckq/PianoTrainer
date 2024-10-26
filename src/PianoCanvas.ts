@@ -5,10 +5,16 @@ import Rect from "./Rect";
 const FACTOR_BLACK_KEYS_WIDTH = 2;
 const FACTOR_BLACK_KEYS_HEIGHT = 1.6;
 
+interface Key {
+  rect: Rect;
+  note: number;
+  black: boolean;
+}
+
 export class PianoCanvas extends Piano {
   private ctx: CanvasRenderingContext2D;
 
-  private keys: { rect: Rect; note: number; black: boolean }[] = [];
+  private keys: Key[] = [];
 
   private whiteKeyWidth!: number;
   private blackKeyWidth!: number;
@@ -22,10 +28,17 @@ export class PianoCanvas extends Piano {
     if (!ctx) throw new Error("2D Context not found");
     this.ctx = ctx;
     this.resize();
+
+    let self = this;
+    let render = function () {
+      self.redraw();
+      requestAnimationFrame(render);
+    };
+    requestAnimationFrame(render);
   }
 
   public resize(width: number = window.innerWidth) {
-    this.whiteKeyWidth = width / 52;
+    this.whiteKeyWidth = width / this.numWhiteKeys();
     this.blackKeyWidth = this.whiteKeyWidth / FACTOR_BLACK_KEYS_WIDTH;
 
     this.whiteKeyHeight = width / 8;
@@ -93,14 +106,10 @@ export class PianoCanvas extends Piano {
     this.drawKeys();
   }
 
-  override pressKey(key: number, velocity: number): void {
-    super.pressKey(key, velocity);
-    this.redraw();
-  }
-
-  override unpressKey(key: number): void {
-    super.unpressKey(key);
-    this.redraw();
+  private isKeyPressed(note: number) {
+    return this.getPressedKeys().some(
+      (pressedKey) => pressedKey.note.note === note
+    );
   }
 
   private drawKeys() {
@@ -114,22 +123,60 @@ export class PianoCanvas extends Piano {
 
     this.ctx.fillStyle = whiteGradient;
     for (const key of this.keys.filter((k) => k.black == false)) {
-      const pressed = this.getPressedKeys().some(
-        (k) => k.note.note == key.note
+      const pressed = this.isKeyPressed(key.note);
+
+      const percent = this.updateKeyHeight(key, this.whiteKeyHeight, pressed);
+
+      this.ctx.beginPath();
+      this.ctx.roundRect(
+        key.rect.x,
+        key.rect.y,
+        key.rect.w,
+        key.rect.h,
+        [0, 0, 4, 4]
       );
-      const y = !pressed ? key.rect.y : key.rect.y - 5;
-      const w_stroke = !pressed ? key.rect.w : key.rect.w - 1;
-      this.ctx.fillRect(key.rect.x, y, key.rect.w, key.rect.h);
-      this.ctx.strokeRect(key.rect.x, y, w_stroke, key.rect.h);
+      this.ctx.fill();
+      this.ctx.strokeRect(
+        key.rect.x,
+        key.rect.y,
+        key.rect.w - 1 * percent,
+        key.rect.h
+      );
     }
     this.ctx.fillStyle = blackRadient;
     for (const key of this.keys.filter((k) => k.black == true)) {
-      const pressed = this.getPressedKeys().some(
-        (k) => k.note.note == key.note
+      const pressed = this.isKeyPressed(key.note);
+
+      this.updateKeyHeight(key, this.blackKeyHeight, pressed);
+
+      this.ctx.beginPath();
+      this.ctx.roundRect(
+        key.rect.x,
+        key.rect.y,
+        key.rect.w,
+        key.rect.h,
+        [0, 0, 2, 2]
       );
-      const y = !pressed ? key.rect.y : key.rect.y - 3;
-      this.ctx.fillRect(key.rect.x, y, key.rect.w, key.rect.h);
+      this.ctx.fill();
     }
+  }
+
+  private updateKeyHeight(key: Key, defaultHeight: number, pressed: boolean) {
+    const speedFactor = 0.5;
+    const heightFactor = 5;
+
+    const heightDifference = defaultHeight - key.rect.h;
+    const adjustment = pressed
+      ? heightDifference < heightFactor
+        ? -speedFactor
+        : 0
+      : heightDifference > 0
+      ? speedFactor
+      : defaultHeight - key.rect.h;
+
+    key.rect.h += adjustment;
+
+    return heightDifference / heightFactor;
   }
 
   public getWidth() {
