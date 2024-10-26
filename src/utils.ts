@@ -1,4 +1,9 @@
-import type Note from "./interfaces/Note";
+
+export default interface Note {
+  note: number;
+  black: boolean;
+  name: string;
+}
 
 export const notesNames = [
   "C",
@@ -17,7 +22,10 @@ export const notesNames = [
 
 export const notes: Note[] = [];
 
-for (let i = 21; i <= 108; i++) {
+export const bottomNote = 21;
+export const topNote = 108;
+
+for (let i = bottomNote; i <= topNote; i++) {
   notes.push({
     note: i,
     black: isBlackKey(i),
@@ -40,3 +48,29 @@ export function isBlackKey(midiPitch: number) {
     noteMod === 10
   );
 }
+
+export function getNoteFromMidiNote(note: number) {
+  return notes.find((n) => n.note == note);
+}
+
+
+
+export function getNumWhiteKeys() {
+  let numberOfNotes = topNote - bottomNote;
+  let numberOfOctaves = Math.floor(numberOfNotes / 12);
+  let numberOfWhiteKeys = numberOfOctaves * 7 + 1;
+
+  if (numberOfNotes % 12 === 0) {
+    return numberOfWhiteKeys;
+  }
+
+  let noteRemainderBottom = bottomNote + numberOfOctaves * 12 + 1;
+
+  for (let i = noteRemainderBottom; i <= topNote; i++) {
+    if (!isBlackKey(i)) {
+      numberOfWhiteKeys++;
+    }
+  }
+  return numberOfWhiteKeys
+}
+

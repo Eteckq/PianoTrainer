@@ -1,9 +1,29 @@
-import { isBlackKey } from "./utils";
-import { Piano } from "./Piano";
-import Rect from "./Rect";
+import {
+  bottomNote,
+  getNoteFromMidiNote,
+  getNumWhiteKeys,
+  isBlackKey,
+  topNote,
+} from "./utils";
+import { noteHandler } from ".";
 
-const FACTOR_BLACK_KEYS_WIDTH = 2;
+const FACTOR_BLACK_KEYS_WIDTH = 1.7;
 const FACTOR_BLACK_KEYS_HEIGHT = 1.6;
+
+class Rect {
+  constructor(
+    public x: number,
+    public y: number,
+    public w: number,
+    public h: number
+  ) {}
+
+  contains(x: number, y: number): boolean {
+    return (
+      x >= this.x && x <= this.x + this.w && y >= this.y && y <= this.y + this.h
+    );
+  }
+}
 
 interface Key {
   rect: Rect;
@@ -11,10 +31,12 @@ interface Key {
   black: boolean;
 }
 
-export class PianoCanvas extends Piano {
+export class PianoCanvas {
   private ctx: CanvasRenderingContext2D;
 
   private keys: Key[] = [];
+
+  private hightligtedKeys: { note: number; color: string }[] = [];
 
   private whiteKeyWidth!: number;
   private blackKeyWidth!: number;
@@ -22,23 +44,34 @@ export class PianoCanvas extends Piano {
   private blackKeyHeight!: number;
 
   constructor(private canvas: HTMLCanvasElement) {
-    super();
-
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("2D Context not found");
     this.ctx = ctx;
-    this.resize();
 
-    let self = this;
-    let render = function () {
-      self.redraw();
-      requestAnimationFrame(render);
-    };
-    requestAnimationFrame(render);
+    this.resize();
+    this.render();
+
+    this.setHightligtedKeys([45, 42, 55, 67])
+  }
+
+  public setHightligtedKeys(notes: number[], color: string = "yellow") {
+    this.hightligtedKeys = [];
+    for (const note of notes) {
+      this.hightligtedKeys.push({ note, color });
+    }
+  }
+
+  private render() {
+    this.redraw();
+    requestAnimationFrame(() => this.render());
+    // setTimeout(() => {
+    //   this.render()
+    // }, 1000/60);
+    // console.count('c')
   }
 
   public resize(width: number = window.innerWidth) {
-    this.whiteKeyWidth = width / this.numWhiteKeys();
+    this.whiteKeyWidth = width / getNumWhiteKeys();
     this.blackKeyWidth = this.whiteKeyWidth / FACTOR_BLACK_KEYS_WIDTH;
 
     this.whiteKeyHeight = width / 8;
@@ -71,7 +104,7 @@ export class PianoCanvas extends Piano {
   private buildRects() {
     let curXPos = 0;
     this.keys = [];
-    for (var midiNote = this.bottomNote; midiNote <= this.topNote; midiNote++) {
+    for (var midiNote = bottomNote; midiNote <= topNote; midiNote++) {
       if (!isBlackKey(midiNote)) {
         const rect = new Rect(
           curXPos,
@@ -107,7 +140,7 @@ export class PianoCanvas extends Piano {
   }
 
   private isKeyPressed(note: number) {
-    return this.getPressedKeys().some(
+    return noteHandler.pressedKeys.some(
       (pressedKey) => pressedKey.note.note === note
     );
   }
@@ -121,44 +154,45 @@ export class PianoCanvas extends Piano {
     blackRadient.addColorStop(0, "#2b2b2b");
     blackRadient.addColorStop(0.3, "black");
 
-    this.ctx.fillStyle = whiteGradient;
-    for (const key of this.keys.filter((k) => k.black == false)) {
+    const drawKey = (key: Key) => {
+      const hightligtedKey = this.hightligtedKeys.find((k) => k.note === key.note);
+      const defaultGradient = key.black ? blackRadient : whiteGradient;
+      const customGradient = this.ctx.createLinearGradient(0, 0, 0, 100);
+    
+      if (hightligtedKey) {
+        customGradient.addColorStop(0, key.black ? "#2b2b2b" : "grey");
+        customGradient.addColorStop(1, hightligtedKey.color);
+        this.ctx.fillStyle = customGradient;
+      } else {
+        this.ctx.fillStyle = defaultGradient;
+      }
+    
       const pressed = this.isKeyPressed(key.note);
-
-      const percent = this.updateKeyHeight(key, this.whiteKeyHeight, pressed);
-
+      const keyHeight = key.black ? this.blackKeyHeight : this.whiteKeyHeight;
+      const percent = this.updateKeyHeight(key, keyHeight, pressed);
+    
       this.ctx.beginPath();
       this.ctx.roundRect(
         key.rect.x,
         key.rect.y,
         key.rect.w,
         key.rect.h,
-        [0, 0, 4, 4]
+        key.black ? [0, 0, 2, 2] : [0, 0, 4, 4]
       );
       this.ctx.fill();
-      this.ctx.strokeRect(
-        key.rect.x,
-        key.rect.y,
-        key.rect.w - 1 * percent,
-        key.rect.h
-      );
-    }
-    this.ctx.fillStyle = blackRadient;
-    for (const key of this.keys.filter((k) => k.black == true)) {
-      const pressed = this.isKeyPressed(key.note);
-
-      this.updateKeyHeight(key, this.blackKeyHeight, pressed);
-
-      this.ctx.beginPath();
-      this.ctx.roundRect(
-        key.rect.x,
-        key.rect.y,
-        key.rect.w,
-        key.rect.h,
-        [0, 0, 2, 2]
-      );
-      this.ctx.fill();
-    }
+    
+      if (!key.black) {
+        this.ctx.strokeRect(
+          key.rect.x,
+          key.rect.y,
+          key.rect.w - 1 * percent,
+          key.rect.h
+        );
+      }
+    };
+    
+    this.keys.filter((key) => !key.black).forEach((key) => drawKey(key));
+    this.keys.filter((key) => key.black).forEach((key) => drawKey(key));
   }
 
   private updateKeyHeight(key: Key, defaultHeight: number, pressed: boolean) {
@@ -180,6 +214,6 @@ export class PianoCanvas extends Piano {
   }
 
   public getWidth() {
-    return this.whiteKeyWidth * this.numWhiteKeys();
+    return this.whiteKeyWidth * getNumWhiteKeys();
   }
 }

@@ -1,32 +1,49 @@
 <script setup>
 import { getCurrentInstance } from "vue";
+import { midiHandler } from "~/src";
+
 const instance = getCurrentInstance();
 
-const midiStore = useMidiStore();
-const webmidi = await navigator.requestMIDIAccess();
-webmidi.addEventListener("statechange", async (event) => {
-  console.log(event.port);
-  instance?.proxy?.$forceUpdate();
-  if (event.port.type == "output") {
-    midiStore.disableOutput(event.port.id);
-  } else {
-    midiStore.disableInput(event.port.id);
+const interval = setInterval(() => {
+  if (midiHandler.webmidi) {
+    midiHandler.webmidi.addEventListener("statechange", async (event) => {
+      instance.proxy.$forceUpdate();
+    });
+    instance.proxy.$forceUpdate();
+    clearInterval(interval);
   }
-});
+}, 200);
 </script>
 
 <template>
-  <div>
-    <div v-for="device in webmidi.inputs">
+  <div v-if="midiHandler.webmidi">
+    <p>Inputs</p>
+    <div class="flex gap-3" v-for="device in midiHandler.webmidi.inputs">
       {{ device[1].name }}
-      <div @click="midiStore.enableInput(device[1])">activate</div>
+      <div
+        v-if="!midiHandler.inputsActivated.some((d) => d.id == device[1].id)"
+        @click="midiHandler.enableInput(device[1])"
+      >
+        activate
+      </div>
+      <div v-else @click="midiHandler.disableInput(device[1].id)">
+        desactivate
+      </div>
     </div>
 
-    <div v-for="device in webmidi.outputs">
+    <p>Outputs</p>
+    <div class="flex gap-3" v-for="device in midiHandler.webmidi.outputs">
       {{ device[1].name }}
-      <div @click="midiStore.enableOutput(device[1])">activate</div>
+      <div
+        v-if="!midiHandler.outputsActivated.some((d) => d.id == device[1].id)"
+        @click="midiHandler.enableOutput(device[1])"
+      >
+        activate
+      </div>
+      <div v-else @click="midiHandler.disableOutput(device[1].id)">
+        desactivate
+      </div>
     </div>
-    {{ midiStore.inputsActivated.map((d) => d.id) }}
-    {{ midiStore.outputsActivated.map((d) => d.id) }}
   </div>
+  <div v-else>...</div>
 </template>
