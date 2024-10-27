@@ -1,5 +1,4 @@
-import type { INoteName, IRect } from ".";
-import type INote from ".";
+import type { INote, INoteName, IRect } from ".";
 
 
 

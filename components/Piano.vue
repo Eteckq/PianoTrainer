@@ -22,6 +22,6 @@ function pressNote(e: MouseEvent) {
   emitNoteOn(key.note.midi, 40, NoteOrigin.MOUSE);
   setTimeout(() => {
     emitNoteOff(key.note.midi, NoteOrigin.MOUSE);
-  }, 1000);
+  }, 10000);
 }
 </script>

@@ -3,7 +3,9 @@
     <div class="text-white">
       <slot />
     </div>
-    <Piano />
-    <BottomBar />
+    <div class="flex flex-col items-center">
+      <Piano />
+      <BottomBar />
+    </div>
   </div>
 </template>

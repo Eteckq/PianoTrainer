@@ -7,7 +7,7 @@ import {
   enableOutput,
   disableInput,
   disableOutput,
-} from "~/src/MidiHandler";
+} from "~/src/handlers/midi";
 const key = ref(0);
 const opened = ref();
 

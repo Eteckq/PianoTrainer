@@ -27,8 +27,6 @@ function initCanvas(canvas: HTMLCanvasElement) {
 
   resize();
   render();
-
-  // setHightligtedKeys([45, 42, 55, 67]);
 }
 
 function setHightligtedKeys(notes: number[], color: string = "yellow") {
@@ -74,10 +72,6 @@ function getKeyAtPoint(e: MouseEvent) {
     if (contains(key.rect, canvasX, canvasY)) return key;
 
   return null;
-}
-
-function getKeyFromNote(note: number) {
-  return keys.find((k) => k.note.midi == note);
 }
 
 function buildRects() {

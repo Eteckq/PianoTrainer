@@ -28,11 +28,11 @@ export type INoteName =
  * - black: If the note is a black key
  * - name: Human name for the note
  */
-export default interface INote {
+export interface INote {
   midi: number;
   black: boolean;
   name: INoteName;
-  octave: number
+  octave: number;
 }
 
 /**

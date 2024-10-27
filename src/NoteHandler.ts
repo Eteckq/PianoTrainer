@@ -14,7 +14,7 @@ interface INoteHandlerEvents {
 }
 
 const eventEmitter = new EventEmitter();
-const pressedKeys: { velocity: number; note: number }[] = [];
+const pressedKeys: { velocity: number; note: number }[] = [{note: 60, velocity: 1}, {note: 64, velocity: 1}, {note: 67, velocity: 1}];
 
 function on<K extends keyof INoteHandlerEvents>(
   event: K,
@@ -24,13 +24,13 @@ function on<K extends keyof INoteHandlerEvents>(
 }
 
 function emitNoteOn(note: number, vel: number, origin: NoteOrigin): void {
-  eventEmitter.emit("note:on", note, vel, origin);
   pressKey(note, vel);
+  eventEmitter.emit("note:on", note, vel, origin);
 }
 
 function emitNoteOff(note: number, origin: NoteOrigin): void {
-  eventEmitter.emit("note:off", note, origin);
   unpressKey(note);
+  eventEmitter.emit("note:off", note, origin);
 }
 
 function emitSustainOn(origin: NoteOrigin): void {

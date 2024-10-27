@@ -1,11 +1,5 @@
-import {
-  emitNoteOff,
-  emitNoteOn,
-  emitSustainOff,
-  emitSustainOn,
-  NoteOrigin,
-  on,
-} from "./NoteHandler";
+import { NoteOrigin, emitNoteOff, emitNoteOn, emitSustainOn, emitSustainOff, on } from "../NoteHandler";
+
 let outputsActivated: MIDIOutput[] = [];
 let inputsActivated: MIDIInput[] = [];
 let webmidi: MIDIAccess | undefined;
