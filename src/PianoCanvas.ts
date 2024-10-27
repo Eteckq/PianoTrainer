@@ -1,3 +1,4 @@
+import { pressedKeys } from "./NoteHandler";
 import {
   bottomNote,
   getNoteFromMidiNote,
@@ -5,9 +6,6 @@ import {
   isBlackKey,
   topNote,
 } from "./utils";
-import { noteHandler } from ".";
-
-const FACTOR_BLACK_KEYS_WIDTH = 1.7;
 const FACTOR_BLACK_KEYS_HEIGHT = 1.6;
 
 class Rect {
@@ -51,7 +49,7 @@ export class PianoCanvas {
     this.resize();
     this.render();
 
-    this.setHightligtedKeys([45, 42, 55, 67])
+    this.setHightligtedKeys([45, 42, 55, 67]);
   }
 
   public setHightligtedKeys(notes: number[], color: string = "yellow") {
@@ -72,7 +70,7 @@ export class PianoCanvas {
 
   public resize(width: number = window.innerWidth) {
     this.whiteKeyWidth = width / getNumWhiteKeys();
-    this.blackKeyWidth = this.whiteKeyWidth / FACTOR_BLACK_KEYS_WIDTH;
+    this.blackKeyWidth = (this.whiteKeyWidth * 7) / 12;
 
     this.whiteKeyHeight = width / 8;
     this.blackKeyHeight = this.whiteKeyHeight / FACTOR_BLACK_KEYS_HEIGHT;
@@ -102,12 +100,13 @@ export class PianoCanvas {
   }
 
   private buildRects() {
-    let curXPos = 0;
+    let curXWhitePos = 0;
+    let curXBlackPos = this.blackKeyWidth/2;
     this.keys = [];
     for (var midiNote = bottomNote; midiNote <= topNote; midiNote++) {
       if (!isBlackKey(midiNote)) {
         const rect = new Rect(
-          curXPos,
+          curXWhitePos,
           0,
           this.whiteKeyWidth,
           this.whiteKeyHeight
@@ -117,10 +116,11 @@ export class PianoCanvas {
           note: midiNote,
           black: false,
         });
-        curXPos += this.whiteKeyWidth;
+        curXWhitePos += this.whiteKeyWidth;
+        curXBlackPos += this.blackKeyWidth
       } else {
         const rect = new Rect(
-          curXPos - this.blackKeyWidth / 2,
+          curXBlackPos,
           0,
           this.blackKeyWidth,
           this.blackKeyHeight
@@ -130,6 +130,7 @@ export class PianoCanvas {
           note: midiNote,
           black: true,
         });
+        curXBlackPos += this.blackKeyWidth
       }
     }
   }
@@ -140,9 +141,7 @@ export class PianoCanvas {
   }
 
   private isKeyPressed(note: number) {
-    return noteHandler.pressedKeys.some(
-      (pressedKey) => pressedKey.note.note === note
-    );
+    return pressedKeys.some((pressedKey) => pressedKey.note === note);
   }
 
   private drawKeys() {
@@ -154,11 +153,14 @@ export class PianoCanvas {
     blackRadient.addColorStop(0, "#2b2b2b");
     blackRadient.addColorStop(0.3, "black");
 
+
     const drawKey = (key: Key) => {
-      const hightligtedKey = this.hightligtedKeys.find((k) => k.note === key.note);
+      const hightligtedKey = this.hightligtedKeys.find(
+        (k) => k.note === key.note
+      );
       const defaultGradient = key.black ? blackRadient : whiteGradient;
       const customGradient = this.ctx.createLinearGradient(0, 0, 0, 100);
-    
+
       if (hightligtedKey) {
         customGradient.addColorStop(0, key.black ? "#2b2b2b" : "grey");
         customGradient.addColorStop(1, hightligtedKey.color);
@@ -166,11 +168,11 @@ export class PianoCanvas {
       } else {
         this.ctx.fillStyle = defaultGradient;
       }
-    
+
       const pressed = this.isKeyPressed(key.note);
       const keyHeight = key.black ? this.blackKeyHeight : this.whiteKeyHeight;
       const percent = this.updateKeyHeight(key, keyHeight, pressed);
-    
+
       this.ctx.beginPath();
       this.ctx.roundRect(
         key.rect.x,
@@ -180,7 +182,7 @@ export class PianoCanvas {
         key.black ? [0, 0, 2, 2] : [0, 0, 4, 4]
       );
       this.ctx.fill();
-    
+
       if (!key.black) {
         this.ctx.strokeRect(
           key.rect.x,
@@ -190,9 +192,26 @@ export class PianoCanvas {
         );
       }
     };
-    
+
     this.keys.filter((key) => !key.black).forEach((key) => drawKey(key));
     this.keys.filter((key) => key.black).forEach((key) => drawKey(key));
+
+
+    // Draw each blackKeyWidth
+    // const red = this.ctx.createLinearGradient(0, 0, 0, 100);
+    // red.addColorStop(0, "blue");
+    // red.addColorStop(0.3, "red");
+    // this.ctx.fillStyle = red;
+    // let gap = this.keys[1].rect.x - this.blackKeyWidth*2
+    // for (let key of this.keys) {
+    //   // console.log(key);
+    //   this.ctx.fillRect(
+    //     (gap+=this.blackKeyWidth)+1,
+    //     key.rect.y+50,
+    //     this.blackKeyWidth - 2,
+    //     25,
+    //   );
+    // }
   }
 
   private updateKeyHeight(key: Key, defaultHeight: number, pressed: boolean) {

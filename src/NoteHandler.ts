@@ -1,54 +1,72 @@
-import EventEmitter from "events";
-import type Note from "./utils";
-import { getNoteFromMidiNote } from "./utils";
+import { EventEmitter } from "events";
 
 export enum NoteOrigin {
   DEVICE,
   MOUSE,
-  APP
+  APP,
 }
 
-export declare interface NoteHandler {
-  on(event: "note:on", listener: (note: number, vel: number, origin: NoteOrigin) => void): this;
-  on(event: "note:off", listener: (note: number, origin: NoteOrigin) => void): this;
-  on(event: "sustain:on", listener: (origin: NoteOrigin) => void): this;
-  on(event: "sustain:off", listener: (origin: NoteOrigin) => void): this;
+interface NoteHandlerEvents {
+  "note:on": (note: number, vel: number, origin: NoteOrigin) => void;
+  "note:off": (note: number, origin: NoteOrigin) => void;
+  "sustain:on": (origin: NoteOrigin) => void;
+  "sustain:off": (origin: NoteOrigin) => void;
 }
 
-export class NoteHandler extends EventEmitter {
-  public pressedKeys: { velocity: number; note: Note }[] = [];
+const eventEmitter = new EventEmitter();
+const pressedKeys: { velocity: number; note: number }[] = [];
 
+// Register event listeners
+function on<K extends keyof NoteHandlerEvents>(
+  event: K,
+  listener: NoteHandlerEvents[K]
+): void {
+  eventEmitter.on(event, listener);
+}
 
-  emitNoteOn(note: number, vel: number, origin: NoteOrigin) {
-    this.emit("note:on", note, vel, origin);
-    this.pressKey(note, vel)
-  }
+// Emit functions
+function emitNoteOn(note: number, vel: number, origin: NoteOrigin): void {
+  eventEmitter.emit("note:on", note, vel, origin);
+  pressKey(note, vel);
+}
 
-  emitNoteOff(note: number, origin: NoteOrigin) {
-    this.emit("note:off", note, origin);
-    this.unpressKey(note)
-  }
+function emitNoteOff(note: number, origin: NoteOrigin): void {
+  eventEmitter.emit("note:off", note, origin);
+  unpressKey(note);
+}
 
-  emitSustainOff(origin: NoteOrigin) {
-    this.emit("sustain:off", origin);
-  }
-  emitSustainOn(origin: NoteOrigin) {
-    this.emit("sustain:on", origin);
-  }
+function emitSustainOn(origin: NoteOrigin): void {
+  eventEmitter.emit("sustain:on", origin);
+}
 
-  public pressKey(key: number, velocity: number): void {
-    let n = this.pressedKeys.find((pk) => pk.note.note == key)?.note;
-    if (!n) {
-      n = getNoteFromMidiNote(key);
-      if (!n) return;
-      this.pressedKeys.push({
-        note: n,
-        velocity: velocity,
-      });
-    }
-  }
+function emitSustainOff(origin: NoteOrigin): void {
+  eventEmitter.emit("sustain:off", origin);
+}
 
-  public unpressKey(key: number): void {
-    this.pressedKeys = this.pressedKeys.filter((pk) => pk.note.note != key);
+// Key press management functions
+function pressKey(key: number, velocity: number): void {
+  if (!pressedKeys.find((pk) => pk.note === key)) {
+    pressedKeys.push({
+      note: key,
+      velocity: velocity,
+    });
   }
 }
+
+function unpressKey(key: number): void {
+  const index = pressedKeys.findIndex((pk) => pk.note === key);
+  if (index !== -1) {
+    pressedKeys.splice(index, 1);
+  }
+}
+
+export {
+  pressedKeys,
+  on,
+  emitNoteOff,
+  emitNoteOn,
+  emitSustainOff,
+  emitSustainOn,
+  pressKey,
+  unpressKey,
+};

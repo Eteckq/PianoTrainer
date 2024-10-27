@@ -5,9 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { NoteOrigin } from "~/src/NoteHandler";
+import { emitNoteOff, emitNoteOn, NoteOrigin } from "~/src/NoteHandler";
 import { PianoCanvas } from "~/src/PianoCanvas";
-import { noteHandler } from "~/src/index";
 const canvas = ref(null);
 let keyboardCanvas: PianoCanvas | undefined;
 onMounted(() => {
@@ -23,10 +22,10 @@ function pressNote(e: MouseEvent) {
 
   const note = keyboardCanvas?.getKeyAtPoint(e);
   if (!note) return;
-  noteHandler.emitNoteOn(note.note, 40, NoteOrigin.MOUSE);
+  emitNoteOn(note.note, 40, NoteOrigin.MOUSE);
   // piano.pressKey(note.note, 40);
   setTimeout(() => {
-    noteHandler.emitNoteOff(note.note, NoteOrigin.MOUSE);
+    emitNoteOff(note.note, NoteOrigin.MOUSE);
     // piano.unpressKey(note.note);
   }, 1000);
 }
