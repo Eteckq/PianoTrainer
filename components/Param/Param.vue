@@ -1,0 +1,56 @@
+<script setup lang="ts">
+const opened = defineModel({ default: false });
+
+const modal = ref();
+
+function draggable(el: HTMLElement) {
+  el.addEventListener("mousedown", function (e) {
+    var offsetX = e.clientX - parseInt(window.getComputedStyle(this).left);
+    var offsetY = e.clientY - parseInt(window.getComputedStyle(this).top);
+
+    function mouseMoveHandler(e: MouseEvent) {
+      el.style.top = e.clientY - offsetY + "px";
+      el.style.left = e.clientX - offsetX + "px";
+    }
+
+    function reset() {
+      window.removeEventListener("mousemove", mouseMoveHandler);
+      window.removeEventListener("mouseup", reset);
+    }
+
+    window.addEventListener("mousemove", mouseMoveHandler);
+    window.addEventListener("mouseup", reset);
+  });
+}
+
+onMounted(() => {
+  modal.value.style.top = 100 + "px";
+  draggable(modal.value);
+});
+</script>
+
+<template>
+  <!-- Open Button -->
+  <div
+    class="py-2 px-4 bg-slate-100 rounded cursor-pointer relative"
+    :class="{ 'bg-slate-300': opened }"
+    @click="opened = !opened"
+  >
+    <slot name="title" />
+  </div>
+  <!-- Modal -->
+  <div ref="modal" v-show="opened" class="rounded bg-gray-600 absolute border">
+    <div
+      class="w-full border-b p-2 flex gap-6 items-center justify-between cursor-move font-medium text-xl"
+    >
+      <slot name="title" />
+      <div
+        class="cursor-pointer p-1 transform rotate-45 text-3xl hover:text-gray-800"
+        @click="opened = false"
+      >
+        +
+      </div>
+    </div>
+    <slot name="content" />
+  </div>
+</template>

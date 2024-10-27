@@ -1,7 +1,9 @@
 <template>
-    <div class="flex flex-col justify-between items-center h-screen">
+  <div class="flex flex-col justify-between items-center h-screen">
+    <div class="text-white">
       <slot />
-      <Piano/>
-      <BottomBar />
     </div>
-  </template>
+    <Piano />
+    <BottomBar />
+  </div>
+</template>

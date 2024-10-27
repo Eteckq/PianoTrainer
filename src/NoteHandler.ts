@@ -6,7 +6,7 @@ export enum NoteOrigin {
   APP,
 }
 
-interface NoteHandlerEvents {
+interface INoteHandlerEvents {
   "note:on": (note: number, vel: number, origin: NoteOrigin) => void;
   "note:off": (note: number, origin: NoteOrigin) => void;
   "sustain:on": (origin: NoteOrigin) => void;
@@ -16,15 +16,13 @@ interface NoteHandlerEvents {
 const eventEmitter = new EventEmitter();
 const pressedKeys: { velocity: number; note: number }[] = [];
 
-// Register event listeners
-function on<K extends keyof NoteHandlerEvents>(
+function on<K extends keyof INoteHandlerEvents>(
   event: K,
-  listener: NoteHandlerEvents[K]
+  listener: INoteHandlerEvents[K]
 ): void {
   eventEmitter.on(event, listener);
 }
 
-// Emit functions
 function emitNoteOn(note: number, vel: number, origin: NoteOrigin): void {
   eventEmitter.emit("note:on", note, vel, origin);
   pressKey(note, vel);
@@ -43,7 +41,6 @@ function emitSustainOff(origin: NoteOrigin): void {
   eventEmitter.emit("sustain:off", origin);
 }
 
-// Key press management functions
 function pressKey(key: number, velocity: number): void {
   if (!pressedKeys.find((pk) => pk.note === key)) {
     pressedKeys.push({

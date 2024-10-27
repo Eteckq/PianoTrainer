@@ -6,27 +6,22 @@
 
 <script setup lang="ts">
 import { emitNoteOff, emitNoteOn, NoteOrigin } from "~/src/NoteHandler";
-import { PianoCanvas } from "~/src/PianoCanvas";
+import { getKeyAtPoint, initCanvas, resize } from "~/src/renders/piano";
 const canvas = ref(null);
-let keyboardCanvas: PianoCanvas | undefined;
 onMounted(() => {
   if (!canvas.value) return;
-
-  keyboardCanvas = new PianoCanvas(canvas.value);
+  initCanvas(canvas.value);
   window.addEventListener("resize", function (event) {
-    keyboardCanvas?.resize();
+    resize();
   });
 });
 
 function pressNote(e: MouseEvent) {
-
-  const note = keyboardCanvas?.getKeyAtPoint(e);
-  if (!note) return;
-  emitNoteOn(note.note, 40, NoteOrigin.MOUSE);
-  // piano.pressKey(note.note, 40);
+  const key = getKeyAtPoint(e);
+  if (!key) return;
+  emitNoteOn(key.note.midi, 40, NoteOrigin.MOUSE);
   setTimeout(() => {
-    emitNoteOff(note.note, NoteOrigin.MOUSE);
-    // piano.unpressKey(note.note);
+    emitNoteOff(key.note.midi, NoteOrigin.MOUSE);
   }, 1000);
 }
 </script>

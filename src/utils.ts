@@ -1,11 +1,9 @@
+import type { INoteName, IRect } from ".";
+import type INote from ".";
 
-export default interface Note {
-  note: number;
-  black: boolean;
-  name: string;
-}
 
-export const notesNames = [
+
+const notesNames: INoteName[] = [
   "C",
   "C#",
   "D",
@@ -20,21 +18,22 @@ export const notesNames = [
   "B",
 ];
 
-export const notes: Note[] = [];
+export const notes: INote[] = [];
 
 export const bottomNote = 21;
 export const topNote = 108;
 
 for (let i = bottomNote; i <= topNote; i++) {
   notes.push({
-    note: i,
+    midi: i,
     black: isBlackKey(i),
     name: getNoteNameFromNumber(i),
+    octave: Math.floor(i / 12) - 1
   });
 }
 
-export function getNoteNameFromNumber(note: number) {
-  return `${notesNames[note % 12]}${Math.floor(note / 12) - 1}`;
+export function getNoteNameFromNumber(note: number): INoteName {
+  return notesNames[note % 12]
 }
 
 export function isBlackKey(midiPitch: number) {
@@ -50,7 +49,7 @@ export function isBlackKey(midiPitch: number) {
 }
 
 export function getNoteFromMidiNote(note: number) {
-  return notes.find((n) => n.note == note);
+  return notes.find((n) => n.midi == note);
 }
 
 
@@ -74,3 +73,8 @@ export function getNumWhiteKeys() {
   return numberOfWhiteKeys
 }
 
+export function contains(rect: IRect, x: number, y: number){
+  return (
+    x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h
+  );
+}

@@ -1,5 +1,11 @@
-import { emitNoteOff, emitNoteOn, emitSustainOff, emitSustainOn, NoteOrigin, on } from "./NoteHandler";
-// Déclaration des variables d'état
+import {
+  emitNoteOff,
+  emitNoteOn,
+  emitSustainOff,
+  emitSustainOn,
+  NoteOrigin,
+  on,
+} from "./NoteHandler";
 let outputsActivated: MIDIOutput[] = [];
 let inputsActivated: MIDIInput[] = [];
 let webmidi: MIDIAccess | undefined;
@@ -14,7 +20,7 @@ async function initMidiHandler() {
     enableOutput(device);
   });
 
-  webmidi.addEventListener("statechange", (event: MIDIConnectionEvent) => {
+  webmidi.addEventListener("statechange", (event: MIDIConnectionEventInit) => {
     if (!event.port) return;
 
     if (event.port.state === "disconnected") {
@@ -86,9 +92,7 @@ function disableInput(id: string): void {
   inputsActivated = inputsActivated.filter((device) => device.id !== id);
 }
 
-// Initialisation du gestionnaire MIDI
 initMidiHandler();
-
 export {
   inputsActivated,
   outputsActivated,
@@ -98,5 +102,5 @@ export {
   disableInput,
   disableOutput,
   sendNote,
-  sendNoteOff
-}
+  sendNoteOff,
+};
