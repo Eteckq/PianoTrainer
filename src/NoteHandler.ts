@@ -14,7 +14,7 @@ interface INoteHandlerEvents {
 }
 
 const eventEmitter = new EventEmitter();
-const pressedKeys: { velocity: number; note: number }[] = [{note: 60, velocity: 1}, {note: 64, velocity: 1}, {note: 67, velocity: 1}];
+const pressedKeys: { velocity: number; midi: number }[] = [];
 
 function on<K extends keyof INoteHandlerEvents>(
   event: K,
@@ -42,16 +42,16 @@ function emitSustainOff(origin: NoteOrigin): void {
 }
 
 function pressKey(key: number, velocity: number): void {
-  if (!pressedKeys.find((pk) => pk.note === key)) {
+  if (!pressedKeys.find((pk) => pk.midi === key)) {
     pressedKeys.push({
-      note: key,
+      midi: key,
       velocity: velocity,
     });
   }
 }
 
 function unpressKey(key: number): void {
-  const index = pressedKeys.findIndex((pk) => pk.note === key);
+  const index = pressedKeys.findIndex((pk) => pk.midi === key);
   if (index !== -1) {
     pressedKeys.splice(index, 1);
   }

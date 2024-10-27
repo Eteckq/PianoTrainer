@@ -5,7 +5,12 @@
 </template>
 
 <script setup lang="ts">
-import { emitNoteOff, emitNoteOn, NoteOrigin } from "~/src/NoteHandler";
+import {
+  emitNoteOff,
+  emitNoteOn,
+  NoteOrigin,
+  pressedKeys,
+} from "~/src/NoteHandler";
 import { getKeyAtPoint, initCanvas, resize } from "~/src/renders/piano";
 const canvas = ref(null);
 onMounted(() => {
@@ -19,9 +24,11 @@ onMounted(() => {
 function pressNote(e: MouseEvent) {
   const key = getKeyAtPoint(e);
   if (!key) return;
-  emitNoteOn(key.note.midi, 40, NoteOrigin.MOUSE);
-  setTimeout(() => {
+
+  if (!pressedKeys.some((k) => k.midi == key.note.midi)) {
+    emitNoteOn(key.note.midi, 40, NoteOrigin.MOUSE);
+  } else {
     emitNoteOff(key.note.midi, NoteOrigin.MOUSE);
-  }, 10000);
+  }
 }
 </script>

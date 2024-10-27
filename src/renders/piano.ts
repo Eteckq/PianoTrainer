@@ -29,7 +29,7 @@ function initCanvas(canvas: HTMLCanvasElement) {
   render();
 }
 
-function setHightligtedKeys(notes: number[], color: string = "yellow") {
+function setHighlightedKeys(notes: number[], color: string = "yellow") {
   hightligtedKeys = [];
   for (const note of notes) {
     hightligtedKeys.push({ midi: note, color });
@@ -117,7 +117,7 @@ function redraw() {
 }
 
 function isKeyPressed(note: number) {
-  return pressedKeys.some((pressedKey) => pressedKey.note === note);
+  return pressedKeys.some((pressedKey) => pressedKey.midi === note);
 }
 
 function drawKeys() {
@@ -212,4 +212,4 @@ function getWidth() {
   return whiteKeyWidth * getNumWhiteKeys();
 }
 
-export { resize, getKeyAtPoint, initCanvas, setHightligtedKeys };
+export { resize, getKeyAtPoint, initCanvas, setHighlightedKeys as setHightligtedKeys };
