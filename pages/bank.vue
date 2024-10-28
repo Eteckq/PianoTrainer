@@ -1,28 +1,19 @@
 <script setup lang="ts">
 import type { IChordName, INoteName } from "~/src";
 import { setHightligtedKeys } from "~/src/renders/piano";
-import { chords, getMidiFromNote, notes, notesNames } from "~/src/utils";
+import { chords, getMidiFromNote, notes } from "~/src/utils";
 
-const selectedNote: Ref<INoteName> = ref("C");
-const selectedChord: Ref<IChordName> = ref("Major");
+function refreshHighlight(
+  selectedNotes: INoteName[],
+  selectedChords: IChordName[]
+) {
+  const c = chords.find((c) => c.name === selectedChords[0]);
+  if (!c) return;
 
-function setSelectedChord(chord: IChordName) {
-  selectedChord.value = chord;
-  refreshHighlight();
-}
-function setSelectedNote(note: INoteName) {
-  selectedNote.value = note;
-  refreshHighlight();
-}
-
-function refreshHighlight() {
-  const chord = chords.find((c) => c.name === selectedChord.value);
-  if (!chord) return;
-
-  const baseNoteIndex = getMidiFromNote(selectedNote.value);
+  const baseNoteIndex = getMidiFromNote(selectedNotes[0]);
   const highlightedKeys = notes
     .filter((note) =>
-      chord.interval.some(
+      c.interval.some(
         (midiInterval) => (midiInterval + baseNoteIndex) % 12 === note.midi % 12
       )
     )
@@ -30,29 +21,14 @@ function refreshHighlight() {
 
   setHightligtedKeys(highlightedKeys);
 }
+
+onBeforeUnmount(() => {
+  setHightligtedKeys([]);
+});
 </script>
 
 <template>
-  <div class="flex flex-col items-center">
-    bank
-    <div class="flex gap-2">
-      <div
-        @click="setSelectedChord(chord.name)"
-        :class="{ 'text-yellow-300': selectedChord == chord.name }"
-        v-for="chord in chords"
-      >
-        {{ chord.name }}
-      </div>
-    </div>
-
-    <div class="flex gap-2">
-      <div
-        @click="setSelectedNote(note)"
-        v-for="note in notesNames"
-        :class="{ 'text-yellow-300': selectedNote == note }"
-      >
-        {{ note }}
-      </div>
-    </div>
+  <div class="flex justify-center h-full gap-8 items-center text-center">
+    <Selector @select="refreshHighlight" />
   </div>
 </template>

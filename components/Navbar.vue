@@ -5,6 +5,9 @@ const pages = [{
 },{
     to: '/bank',
     name: 'Bank'
+},{
+    to: '/train',
+    name: 'Training'
 }]
 </script>
 

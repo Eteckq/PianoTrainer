@@ -1,7 +1,6 @@
 import type { ChordInfo, INoteName } from ".";
 import { chords, getNoteNameFromNumber } from "./utils";
 
-
 function analyze(midiNotes: number[]): ChordInfo[] {
   if (midiNotes.length <= 1) return [];
   const results: ChordInfo[] = [];
@@ -16,17 +15,18 @@ function analyze(midiNotes: number[]): ChordInfo[] {
     let intervalInversed = [...chord.interval.sort((a, b) => a - b)];
     for (let inversion = 0; inversion < chord.interval.length; inversion++) {
       if (normalizedNotes.toString() === intervalInversed.toString()) {
+        const note: INoteName =
+          inversion != 0
+            ? getNoteNameFromNumber(
+                midiNotes[chord.interval.length - inversion]
+              )
+            : rootNote;
         results.push({
-          chord: `${
-            inversion != 0
-              ? getNoteNameFromNumber(
-                  midiNotes[chord.interval.length - inversion]
-                )
-              : rootNote
-          }${chord.notation}`,
+          chord: `${note}${chord.notation}`,
+          note,
           name: chord.name,
           root: rootNote,
-          inversion: inversion,
+          inversion,
         });
         break;
       }

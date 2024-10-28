@@ -10,6 +10,7 @@ export interface IRect {
 
 export type ChordInfo = {
   chord: string;
+  note: INoteName;
   inversion: number;
   root: INoteName;
   name: string;
@@ -58,6 +59,11 @@ export type IChordName =
   | "Diminished Major 7th"
   | "Augmented"
   | "Augmented Major 7th";
+
+export interface IChord {
+  note: INoteName,
+  chord: IChordName
+}
 
 /**
  * A piano note
