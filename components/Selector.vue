@@ -53,7 +53,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col justify-center h-full gap-8 items-center text-center text-2xl text-pallet-text">
+  <div class="flex flex-col justify-center h-full gap-8 items-center text-center text-xs md:text-2xl text-pallet-text">
     <div class="">
       <h2 class="mb-3 font-medium">Root note</h2>
       <div
@@ -63,7 +63,7 @@ onMounted(() => {
           @click="toggleSelectedNote(note)"
           v-for="note in notesNames"
           :class="{ 'border-pallet-secondary text-pallet-secondary': selectedNotes.some((n) => n == note) }"
-          class="cursor-pointer border py-4 w-16 rounded-sm"
+          class="cursor-pointer border py-1 md:py-4 w-8 md:w-16 rounded-sm"
         >
           {{ note }}
         </div>
@@ -72,7 +72,7 @@ onMounted(() => {
     <div class="">
       <h2 class="mb-3 font-medium">Chord</h2>
       <div
-        class="border p-2 overflow-y-scroll scrollbar-thin scrollbar-thumb-slate-500 h-72"
+        class="border p-2 overflow-y-scroll scrollbar-thin scrollbar-thumb-slate-500 h-28 md:h-72"
       >
         <div
           @click="toggleSelectedChord(chord.name)"
