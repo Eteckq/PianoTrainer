@@ -29,7 +29,7 @@ function pressNote(e: MouseEvent) {
     emitNoteOn(key.note.midi, 40, NoteOrigin.MOUSE);
     setTimeout(() => {
       emitNoteOff(key.note.midi, NoteOrigin.MOUSE);
-    }, 800);
+    }, 1800);
   } else {
     emitNoteOff(key.note.midi, NoteOrigin.MOUSE);
   }
