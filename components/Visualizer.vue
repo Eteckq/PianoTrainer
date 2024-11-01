@@ -134,10 +134,11 @@ function toggleEmit(midi: number, emit: boolean) {
   const emitterKey = emitterKeys.find((e) => e.key.note.midi === midi);
   if (!emitterKey) return;
 
-  const rect = rects.value.find((r) => r.key.note.midi === midi && !r.finished);
+  const rect = rects.value.find((r) => r.midi === midi && !r.finished);
   if (emit && !rect) {
     rects.value.push({
-      key: emitterKey.key,
+      rect: {...emitterKey.key.rect},
+      midi: emitterKey.key.note.midi,
       started: Date.now(),
       finished: 0,
       outscreen: false,
@@ -178,6 +179,12 @@ const rectangleConfig = ref({
   // tint: "#ffffffff",
 });
 
+function purge() {
+    const stillInScreen = rects.value.some(r => !r.outscreen)
+    if(stillInScreen) return
+    rects.value = []
+}
+
 function drawRectangle(graphics: GraphicsInst, rect: DrawKey) {
   if (rect.outscreen) return;
   tick.value;
@@ -187,14 +194,17 @@ function drawRectangle(graphics: GraphicsInst, rect: DrawKey) {
     bottomY -
     graphics.height -
     timeAliveFinished * 0.2 * rectangleConfig.value.speed;
-  const width = rect.key.rect.w;
+  const width = rect.rect.w;
   const height =
     (timeAlive - timeAliveFinished) * 0.2 * rectangleConfig.value.speed;
-  const x = rect.key.rect.x;
-
-  if (y + height < 0) rect.outscreen = true;
-
+  const x = rect.rect.x;
+  
   graphics.clear();
+  if (y + height < 0) {
+    rect.outscreen = true;
+    purge()
+  }
+
   if (rectangleConfig.value.color.aliveBased) {
     graphics.beginFill(getColorFromNumber(timeAlive / 100));
   } else if (rectangleConfig.value.color.heightBased) {
@@ -204,7 +214,7 @@ function drawRectangle(graphics: GraphicsInst, rect: DrawKey) {
   } else {
     graphics.beginFill(rectangleConfig.value.color.fixed);
   }
-  graphics.drawRoundedRect(0, 0, width, height, 5);
+  graphics.drawRoundedRect(0, 0, rect.outscreen ? 0 : width, height, 5);
   graphics.x = x;
   graphics.y = y;
 }
@@ -257,7 +267,8 @@ onUnmounted(() => {
 });
 
 interface DrawKey {
-  key: IKey;
+  rect: IRect;
+  midi: number;
   started: number;
   finished: number;
   outscreen: boolean;
@@ -287,11 +298,7 @@ interface DrawKey {
       </div>
     </div>
     <Application ref="application" class="absolute bottom-0">
-      <Graphics
-        v-for="rect in rects"
-        :key="rect.key.note.midi"
-        @render="drawRectangle($event, rect)"
-      >
+      <Graphics v-for="rect in rects" @render="drawRectangle($event, rect)">
         <BlurFilter
           :strength="rectangleConfig.strength"
           :blur="rectangleConfig.blur"
