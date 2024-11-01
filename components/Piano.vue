@@ -27,6 +27,9 @@ function pressNote(e: MouseEvent) {
 
   if (!pressedKeys.some((k) => k.midi == key.note.midi)) {
     emitNoteOn(key.note.midi, 40, NoteOrigin.MOUSE);
+    setTimeout(() => {
+      emitNoteOff(key.note.midi, NoteOrigin.MOUSE);
+    }, 800);
   } else {
     emitNoteOff(key.note.midi, NoteOrigin.MOUSE);
   }

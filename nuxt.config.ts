@@ -9,9 +9,12 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
-  vue: {  
+  app: {
+    pageTransition: { name: "page", mode: "out-in" },
+  },
+  vue: {
     compilerOptions: {
-      isCustomElement: (tag) => ['BlurFilter', 'Graphics'].includes(tag),
+      isCustomElement: (tag) => ["BlurFilter", "Graphics"].includes(tag),
     },
   },
   css: ["~/assets/css/main.css"],
