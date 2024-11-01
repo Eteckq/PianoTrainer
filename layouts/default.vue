@@ -6,7 +6,7 @@ const show = ref(false);
   <div
     class="flex flex-col transition-all duration-500 text-white h-screen overflow-hidden"
   >
-    <div class="absolute right-0 z-10 cursor-pointer" @click="show = !show"><span v-if="!show">Show</span> <span v-else>Hide</span> bottom bar</div>
+    <div class="absolute top-2 right-2 z-10 cursor-pointer" @click="show = !show"><span v-if="!show">Show</span> <span v-else>Hide</span> bottom bar</div>
 
     <Navbar />
     <div class="grow w-full">

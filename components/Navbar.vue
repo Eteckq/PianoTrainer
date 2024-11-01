@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const pages = [{
     to: '/',
-    name: 'index'
+    name: 'Visualizer'
 },{
     to: '/analyzer',
     name: 'Identifier'

@@ -63,7 +63,7 @@ onMounted(() => {
           @click="toggleSelectedNote(note)"
           v-for="note in notesNames"
           :class="{ 'border-pallet-secondary text-pallet-secondary': selectedNotes.some((n) => n == note) }"
-          class="cursor-pointer border py-4 w-16"
+          class="cursor-pointer border py-4 w-16 rounded-sm"
         >
           {{ note }}
         </div>

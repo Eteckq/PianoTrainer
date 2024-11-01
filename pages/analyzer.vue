@@ -34,5 +34,8 @@ function setAnalyzedChords() {
         Inversion {{ res.inversion }}
       </p>
     </div>
+    <div class="text-xl text-gray-600" v-if="result.length == 0">
+      No chord detected
+    </div>
   </div>
 </template>
