@@ -1,5 +1,7 @@
 <template>
-  <div class="bg-gray-400 w-full flex gap-4 p-4">
-    <ParamMIDI />
+  <div class="flex bg-pallet-primary text-pallet-primary items-center gap-4 h-16 overflow-hidden">
+    <div class="p-4">
+      <ParamMIDI />
+    </div>
   </div>
 </template>

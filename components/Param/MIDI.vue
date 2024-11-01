@@ -30,20 +30,20 @@ onMounted(() => {
     <template #content>
       <div class="flex flex-col" v-if="webmidi">
         <ParamMIDIDevices
-          :key="key"
-          title="Input"
-          :fc-disable="disableOutput"
-          :fc-enable="enableOutput"
-          :devices="webmidi.outputs"
-          :activated="outputsActivated"
-        />
-        <ParamMIDIDevices
-          :key="key+1"
-          title="Outputs"
-          :fc-disable="disableInput"
-          :fc-enable="enableInput"
+          :key="key + 1"
+          title="Inputs"
+          :fc-disable="(id: string)=>{disableInput(id); key++}"
+          :fc-enable="(id: MIDIInput)=>{enableInput(id); key++}"
           :devices="webmidi.inputs"
           :activated="inputsActivated"
+        />
+        <ParamMIDIDevices
+          :key="key"
+          title="Outputs"
+          :fc-disable="(id: string)=>{disableOutput(id); key++}"
+          :fc-enable="(id: MIDIOutput)=>{enableOutput(id); key++}"
+          :devices="webmidi.outputs"
+          :activated="outputsActivated"
         />
       </div>
       <div v-else>...</div>

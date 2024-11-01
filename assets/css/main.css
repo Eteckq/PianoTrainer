@@ -3,6 +3,6 @@
 @tailwind utilities;
 
 body {
-  background: radial-gradient(rgb(66, 59, 84) 0%, rgb(0, 16, 20) 100%);
+  background: radial-gradient(#14213D 0%, rgb(0, 16, 20) 100%);
   overflow-x : hidden;
 }

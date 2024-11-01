@@ -76,6 +76,7 @@ function sendNoteOff(note: number): void {
 
 function disableOutput(id: string): void {
   outputsActivated = outputsActivated.filter((device) => device.id !== id);
+  
 }
 
 function disableInput(id: string): void {

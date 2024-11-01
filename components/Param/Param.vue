@@ -5,8 +5,8 @@ const opened = defineModel({ default: false });
 <template>
   <!-- Open Button -->
   <div
-    class="py-2 px-4 bg-slate-100 rounded cursor-pointer relative"
-    :class="{ 'bg-slate-300': opened }"
+    class="py-2 px-4 bg-pallet-secondary rounded cursor-pointer relative"
+    :class="{ 'bg-opacity-85': opened }"
     @click="opened = !opened"
   >
     <slot name="title" />

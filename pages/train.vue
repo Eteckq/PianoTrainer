@@ -29,6 +29,10 @@ function start() {
   }
 }
 
+function stop() {
+  chordsToFound.value = [];
+}
+
 function checkChord() {
   if (chordsToFound.value.length === 0) return;
   const analyzed = analyze(pressedKeys.map((k) => k.midi));
@@ -68,21 +72,38 @@ function pickChord(): IChord {
           }
         "
       />
-      <div @click="start">GO</div>
-    </div>
-    <div v-else>
-      <TransitionGroup
-        class="flex flex-col gap-6 justify-center items-center"
-        style="font-size: 20px"
-        @click="chordFound"
-        name="list"
-        tag="ul"
+      <div
+        class="w-full text-2xl font-bold hover:border-pallet-primary border-green-600 text-center border py-2 rounded-sm bg-green-600 cursor-pointer text-pallet-primary"
+        @click="start"
       >
-        <div class="customAnim" v-for="(item, i) in chordsToFound" :key="item">
-          <span>{{ item.note }}</span
-          ><span>{{ item.chord.notation }}</span>
-        </div>
-      </TransitionGroup>
+        Go!
+      </div>
+    </div>
+    <div class="grid grid-rows-2 w-full gap-12" v-else>
+      <div
+        class="m-auto w-1/3 text-2xl font-bold hover:border-red-300 border-red-600 text-center border py-2 rounded-sm bg-red-600 cursor-pointer text-pallet-primary"
+        @click="stop"
+      >
+        Stop
+      </div>
+      <div class="h-56">
+        <TransitionGroup
+          class="flex flex-col gap-6 justify-center items-center"
+          style="font-size: 20px"
+          @click="chordFound"
+          name="list"
+          tag="ul"
+        >
+          <div
+            class="customAnim"
+            v-for="(item, i) in chordsToFound"
+            :key="item"
+          >
+            <span>{{ item.note }}</span
+            ><span>{{ item.chord.notation }}</span>
+          </div>
+        </TransitionGroup>
+      </div>
     </div>
   </div>
 </template>

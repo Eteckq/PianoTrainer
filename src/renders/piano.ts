@@ -12,7 +12,7 @@ const FACTOR_BLACK_KEYS_HEIGHT = 1.6;
 
 let ctx: CanvasRenderingContext2D | null;
 
-let keys: IKey[] = [];
+export const keys: Ref<IKey[]> = ref([]);
 
 let hightligtedKeys: { midi: number; color: string }[] = [];
 
@@ -30,7 +30,7 @@ function initCanvas(canvas: HTMLCanvasElement) {
 }
 
 function getPianoRects() {
-  return keys;
+  return keys.value;
 }
 
 function setHighlightedKeys(notes: number[], color: string = "yellow") {
@@ -69,10 +69,10 @@ function getKeyAtPoint(e: MouseEvent) {
   const canvasY = e.clientY - ctx.canvas.getBoundingClientRect().top;
 
   if (canvasY < blackKeyHeight)
-    for (const key of keys.filter((k) => k.note.black == true))
+    for (const key of getPianoRects().filter((k) => k.note.black == true))
       if (contains(key.rect, canvasX, canvasY)) return key;
 
-  for (const key of keys.filter((k) => k.note.black == false))
+  for (const key of getPianoRects().filter((k) => k.note.black == false))
     if (contains(key.rect, canvasX, canvasY)) return key;
 
   return null;
@@ -81,7 +81,7 @@ function getKeyAtPoint(e: MouseEvent) {
 function buildRects() {
   let curXWhitePos = 0;
   let curXBlackPos = blackKeyWidth / 2;
-  keys = [];
+  keys.value = [];
   for (var midiNote = bottomNote; midiNote <= topNote; midiNote++) {
     const note = getNoteFromMidiNote(midiNote);
     if (!note) continue;
@@ -92,7 +92,7 @@ function buildRects() {
         w: whiteKeyWidth,
         h: whiteKeyHeight,
       };
-      keys.push({
+      keys.value.push({
         rect,
         note: note,
       });
@@ -105,7 +105,7 @@ function buildRects() {
         w: blackKeyWidth,
         h: blackKeyHeight,
       };
-      keys.push({
+      keys.value.push({
         rect,
         note: note,
       });
@@ -174,8 +174,8 @@ function drawKeys() {
     }
   };
 
-  keys.filter((key) => !key.note.black).forEach((key) => drawKey(key));
-  keys.filter((key) => key.note.black).forEach((key) => drawKey(key));
+  keys.value.filter((key) => !key.note.black).forEach((key) => drawKey(key));
+  keys.value.filter((key) => key.note.black).forEach((key) => drawKey(key));
 
   // Draw each blackKeyWidth
   // const red = ctx.createLinearGradient(0, 0, 0, 100);

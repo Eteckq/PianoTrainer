@@ -32,7 +32,7 @@ onMounted(() => {
 
 <template>
   <!-- Modal -->
-  <div ref="modal" v-show="opened" class="rounded bg-gray-600 absolute border">
+  <div ref="modal" v-show="opened" class="rounded bg-pallet-secondary absolute border overflow-y-scroll overflow-x-hidden scrollbar-thin z-10" style="max-height: 50vh;">
     <div
       class="w-full border-b p-2 flex gap-6 items-center justify-between cursor-move font-medium text-xl"
     >

@@ -9,7 +9,17 @@ export default {
     "./error.vue",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        pallet: {
+          black: "#000000",
+          primary: "#14213D",
+          secondary: "#FCA311",
+          text: "#E5E5E5",
+          white: "#FFFFFF",
+        }
+      }
+    },
   },
   plugins: [require("tailwind-scrollbar")],
 };
