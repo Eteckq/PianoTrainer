@@ -11,7 +11,8 @@ import { Container } from "@pixi/display";
 import { Color, Filter, Shader } from "@pixi/core";
 import type { IKey, IRect, ParticleConfigOptions } from "~/src";
 import { off, on } from "~/src/NoteHandler";
-import { getPianoRects, keys } from "~/src/renders/piano";
+import { getPianoRects, keys, pianoCanvas } from "~/src/renders/piano";
+import { CanvasRecorder } from "~/src/utils";
 
 const application: Ref<ApplicationInst | null> = ref(null);
 const topDiv: Ref<HTMLElement | null> = ref(null);
@@ -137,7 +138,7 @@ function toggleEmit(midi: number, emit: boolean) {
   const rect = rects.value.find((r) => r.midi === midi && !r.finished);
   if (emit && !rect) {
     rects.value.push({
-      rect: {...emitterKey.key.rect},
+      rect: { ...emitterKey.key.rect },
       midi: emitterKey.key.note.midi,
       started: Date.now(),
       finished: 0,
@@ -180,9 +181,29 @@ const rectangleConfig = ref({
 });
 
 function purge() {
-    const stillInScreen = rects.value.some(r => !r.outscreen)
-    if(stillInScreen) return
-    rects.value = []
+  const stillInScreen = rects.value.some((r) => !r.outscreen);
+  if (stillInScreen) return;
+  rects.value = [];
+}
+let isRecording = ref(false);
+let recorder: CanvasRecorder | null = null;
+let pianoRecorder: CanvasRecorder | null = null;
+function record() {
+  if (isRecording.value && recorder && pianoRecorder) {
+    recorder.stopRecording();
+    recorder.download("visualizer");
+    pianoRecorder.stopRecording();
+    pianoRecorder.download("piano");
+    isRecording.value = false;
+  } else {
+    if (!application.value?.canvas || !pianoCanvas) return;
+    recorder = new CanvasRecorder(application.value.canvas);
+    pianoRecorder = new CanvasRecorder(pianoCanvas);
+
+    recorder.startRecording();
+    pianoRecorder.startRecording();
+    isRecording.value = true;
+  }
 }
 
 function drawRectangle(graphics: GraphicsInst, rect: DrawKey) {
@@ -198,11 +219,11 @@ function drawRectangle(graphics: GraphicsInst, rect: DrawKey) {
   const height =
     (timeAlive - timeAliveFinished) * 0.2 * rectangleConfig.value.speed;
   const x = rect.rect.x;
-  
+
   graphics.clear();
   if (y + height < 0) {
     rect.outscreen = true;
-    purge()
+    purge();
   }
 
   if (rectangleConfig.value.color.aliveBased) {
@@ -295,6 +316,11 @@ interface DrawKey {
 
       <div @click="openConfigKey = !openConfigKey" class="cursor-pointer">
         🟦
+      </div>
+
+      <div @click="record" class="cursor-pointer">
+        <span v-if="!isRecording">🔴</span>
+        <span v-else>🟢</span>
       </div>
     </div>
     <Application ref="application" class="absolute bottom-0">

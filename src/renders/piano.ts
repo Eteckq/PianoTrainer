@@ -11,6 +11,7 @@ import {
 const FACTOR_BLACK_KEYS_HEIGHT = 1.6;
 
 let ctx: CanvasRenderingContext2D | null;
+let pianoCanvas: HTMLCanvasElement | null;
 
 export const keys: Ref<IKey[]> = ref([]);
 
@@ -22,6 +23,7 @@ let whiteKeyHeight!: number;
 let blackKeyHeight!: number;
 
 function initCanvas(canvas: HTMLCanvasElement) {
+  pianoCanvas = canvas
   ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("2D Context not found");
 
@@ -222,4 +224,5 @@ export {
   initCanvas,
   setHighlightedKeys as setHightligtedKeys,
   getPianoRects,
+  pianoCanvas
 };
