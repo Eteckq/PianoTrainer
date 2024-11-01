@@ -1,34 +1,41 @@
 <script setup lang="ts">
-import type { INoteName, IChordName, IChord, ChordInfo } from "~/src";
+import type { INoteName, IChordName, IChord, IPressedChordInfo } from "~/src";
 import { analyze } from "~/src/ChordAnalyser";
-import { on, pressedKeys } from "~/src/NoteHandler";
+import { off, on, pressedKeys } from "~/src/NoteHandler";
+import { chords, type IChordInfo } from "~/src/utils";
 
 const selectedNotes: Ref<INoteName[]> = ref(["C"]);
 const selectedMode: Ref<IChordName[]> = ref(["Major"]);
 
+let selectedChords: IChordInfo[] = [];
 const chordsToFound: Ref<IChord[]> = ref([]);
 
-on("note:on", () => {
-  checkChord(analyze(pressedKeys.map((k) => k.midi)));
-});
-on("note:off", () => {
-  checkChord(analyze(pressedKeys.map((k) => k.midi)));
+onMounted(() => {
+  on("note:change", checkChord);
 });
 
-const pickInArray = (array: any[]) =>
-  array[Math.floor(Math.random() * array.length)];
+onBeforeUnmount(() => {
+  off("note:change", checkChord);
+});
+
+function pickInArray<T>(array: T[]) {
+  return array[Math.floor(Math.random() * array.length)];
+}
 
 function start() {
+  selectedChords = chords.filter((c) => selectedMode.value.includes(c.name));
   for (let i = 0; i < 3; i++) {
     chordsToFound.value.push(pickChord());
   }
 }
 
-function checkChord(analyzed: ChordInfo[]) {
+function checkChord() {
+  if (chordsToFound.value.length === 0) return;
+  const analyzed = analyze(pressedKeys.map((k) => k.midi));
   if (
     analyzed.some(
       (ci) =>
-        ci.name == chordsToFound.value[0].chord &&
+        ci.name == chordsToFound.value[0].chord.name &&
         ci.note == chordsToFound.value[0].note
     )
   ) {
@@ -44,7 +51,7 @@ function chordFound() {
 function pickChord(): IChord {
   return {
     note: pickInArray(selectedNotes.value),
-    chord: pickInArray(selectedMode.value),
+    chord: pickInArray(selectedChords),
   };
 }
 </script>
@@ -65,16 +72,15 @@ function pickChord(): IChord {
     </div>
     <div v-else>
       <TransitionGroup
-        class=" flex flex-col gap-6 justify-center items-center"
-        style="font-size: 20px;"
+        class="flex flex-col gap-6 justify-center items-center"
+        style="font-size: 20px"
         @click="chordFound"
         name="list"
         tag="ul"
       >
-        <!-- :style="[{'font-size': `${50-(i*15)}px`}, {'opacity': `${(100-(i*40))/100}`}]" -->
-        <div class="TG" v-for="(item, i) in chordsToFound" :key="item">
-          <span class="mr-1">{{ item.note }}</span
-          ><span>{{ item.chord }}</span>
+        <div class="customAnim" v-for="(item, i) in chordsToFound" :key="item">
+          <span>{{ item.note }}</span
+          ><span>{{ item.chord.notation }}</span>
         </div>
       </TransitionGroup>
     </div>
@@ -85,8 +91,8 @@ function pickChord(): IChord {
 .list-move,
 .list-enter-active,
 .list-leave-active {
-  transition: all .5s ease;
-  opacity: .2;
+  transition: all 0.5s ease;
+  opacity: 0.2;
 }
 
 .list-enter-from,
@@ -101,31 +107,27 @@ function pickChord(): IChord {
   opacity: 0;
 }
 
-
-.TG.list-move:nth-child(2) {
+.customAnim.list-move:nth-child(2) {
   font-size: 50px;
   opacity: 1;
 }
 
-.TG:nth-child(1) {
+.customAnim:nth-child(1) {
   font-size: 50px;
   opacity: 1;
 }
 
-.TG.list-move:nth-child(3) {
+.customAnim.list-move:nth-child(3) {
   font-size: 30px;
-  opacity: .5;
+  opacity: 0.5;
 }
 
-.TG:nth-child(2) {
+.customAnim:nth-child(2) {
   font-size: 30px;
-  opacity: .5;
+  opacity: 0.5;
 }
 
-
-
-.TG:nth-child(3) {
-  opacity: .2;
+.customAnim:nth-child(3) {
+  opacity: 0.2;
 }
-
 </style>

@@ -1,12 +1,10 @@
 <template>
-  <div class="flex flex-col justify-between items-center h-screen text-white">
+  <div class="flex flex-col items-center text-white h-screen">
     <Navbar />
-    <div class="h-full w-full">
+    <div class="grow  w-full">
       <slot />
     </div>
-    <div class="flex flex-col items-center">
-      <Piano />
-      <BottomBar />
-    </div>
+    <Piano />
+    <BottomBar />
   </div>
 </template>

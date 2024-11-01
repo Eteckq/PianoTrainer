@@ -1,9 +1,9 @@
-import type { ChordInfo, INoteName } from ".";
+import type { IPressedChordInfo, INoteName } from ".";
 import { chords, getNoteNameFromNumber } from "./utils";
 
-function analyze(midiNotes: number[]): ChordInfo[] {
+function analyze(midiNotes: number[]): IPressedChordInfo[] {
   if (midiNotes.length <= 1) return [];
-  const results: ChordInfo[] = [];
+  const results: IPressedChordInfo[] = [];
   midiNotes = midiNotes.sort((a, b) => a - b);
   const rootNote = getNoteNameFromNumber(midiNotes[0]);
 

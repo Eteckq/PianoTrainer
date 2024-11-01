@@ -1,7 +1,10 @@
 <script setup lang="ts">
 const pages = [{
     to: '/',
-    name: 'Index'
+    name: 'index'
+},{
+    to: '/analyzer',
+    name: 'Identifier'
 },{
     to: '/bank',
     name: 'Bank'

@@ -1,10 +1,12 @@
 import type { IChordName, INote, INoteName, IRect } from ".";
 
-export const chords: {
-  name: IChordName,
-  interval: number[],
-  notation: string
-}[] = [
+export type IChordInfo = {
+  name: IChordName;
+  interval: number[];
+  notation: string;
+};
+
+export const chords: IChordInfo[] = [
   { name: "Major", interval: [0, 4, 7], notation: "maj" },
   { name: "Minor", interval: [0, 3, 7], notation: "min" },
   { name: "5th", interval: [0, 7], notation: "5" },
@@ -38,6 +40,8 @@ export const chords: {
   { name: "Augmented", interval: [0, 4, 8], notation: "aug" },
   { name: "Augmented Major 7th", interval: [0, 4, 8, 11], notation: "augM7" },
 ];
+
+
 
 
 export const notesNames: INoteName[] = [

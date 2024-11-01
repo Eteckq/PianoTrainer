@@ -4,4 +4,5 @@
 
 body {
   background: radial-gradient(rgb(66, 59, 84) 0%, rgb(0, 16, 20) 100%);
+  overflow-x : hidden;
 }

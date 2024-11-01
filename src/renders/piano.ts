@@ -29,6 +29,10 @@ function initCanvas(canvas: HTMLCanvasElement) {
   render();
 }
 
+function getPianoRects() {
+  return keys;
+}
+
 function setHighlightedKeys(notes: number[], color: string = "yellow") {
   hightligtedKeys = [];
   for (const note of notes) {
@@ -212,4 +216,10 @@ function getWidth() {
   return whiteKeyWidth * getNumWhiteKeys();
 }
 
-export { resize, getKeyAtPoint, initCanvas, setHighlightedKeys as setHightligtedKeys };
+export {
+  resize,
+  getKeyAtPoint,
+  initCanvas,
+  setHighlightedKeys as setHightligtedKeys,
+  getPianoRects,
+};

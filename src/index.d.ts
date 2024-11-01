@@ -1,3 +1,5 @@
+import type { IChordInfo } from "./utils";
+
 /**
  * Rectangle, to display on a canvas
  */
@@ -8,7 +10,23 @@ export interface IRect {
   h: number;
 }
 
-export type ChordInfo = {
+export interface ParticleConfigOptions {
+  lifetime: { min: number; max: number };
+  frequency: number;
+  spawnChance: number;
+  particlesPerWave: number;
+  maxParticles: number;
+  alpha: { time: number; value: number }[];
+  moveSpeed: { time: number; value: number }[];
+  scale: { time: number; value: number }[];
+  scaleMultiplier: number;
+  color: { time: number; value: string }[];
+  rotation: { min: number; max: number };
+  textures: string[];
+}
+
+
+export type IPressedChordInfo = {
   chord: string;
   note: INoteName;
   inversion: number;
@@ -62,7 +80,7 @@ export type IChordName =
 
 export interface IChord {
   note: INoteName,
-  chord: IChordName
+  chord: IChordInfo
 }
 
 /**
