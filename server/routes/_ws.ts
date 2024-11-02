@@ -1,24 +1,21 @@
+import { INoteHandlerEvents, NoteOrigin } from "~/src/NoteHandler";
+
+export interface Message {
+  cmd: keyof INoteHandlerEvents;
+  note: number;
+  vel: number;
+  origin: NoteOrigin;
+}
+
 export default defineWebSocketHandler({
-    open(peer) {
-      peer.send({ user: "server", message: `Welcome ${peer}!` });
-      peer.publish("chat", { user: "server", message: `${peer} joined!` });
-      peer.subscribe("chat");
-    },
-    message(peer, message) {
-      if (message.text().includes("ping")) {
-        peer.send({ user: "server", message: "pong" });
-      } else {
-        const msg = {
-          user: peer.toString(),
-          message: message.toString(),
-        };
-        peer.send(msg); // echo
-        peer.publish("chat", msg);
-      }
-    },
-    close(peer) {
-      peer.publish("chat", { user: "server", message: `${peer} left!` });
-    },
-  });
-  
-  
+  open(peer) {
+    peer.subscribe("piano");
+  },
+  message(peer, message) {
+    const json: Message = message.json();
+    peer.publish("piano", message);
+  },
+  // close(peer) {
+  //   peer.publish("piano", { user: "server", message: `${peer} left!` });
+  // },
+});

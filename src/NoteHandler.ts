@@ -4,10 +4,11 @@ export enum NoteOrigin {
   DEVICE='d',
   MOUSE='m',
   APP='a',
+  SOCKET='s',
 }
 
 
-interface INoteHandlerEvents {
+export interface INoteHandlerEvents {
   "note:on": (note: number, vel: number, origin: NoteOrigin) => void;
   "note:off": (note: number, origin: NoteOrigin) => void;
   "note:change": (origin: NoteOrigin) => void;
