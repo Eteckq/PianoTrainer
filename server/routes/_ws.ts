@@ -12,9 +12,6 @@ export default defineWebSocketHandler({
     peer.subscribe("piano");
   },
   message(peer, m) {
-    const json: Message = JSON.parse(m.text());
-    console.log(peer.peers.size);
-    
     peer.publish("piano", m);
   },
   // close(peer) {
