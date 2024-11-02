@@ -18,7 +18,7 @@ export const connect = async () => {
   ws.value = (new WebSocket(url));
 
   ws.value.addEventListener("message", async (event) => {
-    const message: MessageSocket = JSON.parse(await event.data.text());
+    const message: MessageSocket = JSON.parse(event.data);
     if(message.cmd == 'note:on'){
         emitNoteOn(message.note, message.vel, NoteOrigin.SOCKET)
     }
