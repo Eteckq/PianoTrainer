@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Application, type ApplicationInst } from "vue3-pixi";
-import { off, on } from "~/src/NoteHandler";
+import {
+  emitSustainOff,
+  emitSustainOn,
+  NoteOrigin,
+  off,
+  on,
+} from "~/src/NoteHandler";
 import {
   drawRectangle,
   initializeTicks,
@@ -13,6 +19,7 @@ import {
 } from "~/src/renders/visualizer";
 import { isRecording, record } from "~/src/renders/recorder";
 import { pianoCanvas } from "~/src/renders/piano";
+import { sustain } from "~/src/audio/engine";
 
 const application: Ref<ApplicationInst | null> = ref(null);
 const topDiv: Ref<HTMLElement | null> = ref(null);
@@ -39,6 +46,16 @@ onUnmounted(() => {
 
 <template>
   <div class="h-full w-full relative overflow-hidden" ref="topDiv">
+      <div
+        class="absolute right-2 bottom-4 cursor-pointer z-10"
+        @click="
+          !sustain
+            ? emitSustainOn(NoteOrigin.MOUSE)
+            : emitSustainOff(NoteOrigin.MOUSE)
+        "
+      >
+        <div :class="{ 'opacity-40': !sustain }">🟦</div>
+      </div>
     <div class="absolute z-10 top-0 left-0 flex gap-4 w-full px-4 mt-2">
       <Param>
         <template #button> ✨ </template>
