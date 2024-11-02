@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { INoteName, IChordName, IChord, IPressedChordInfo } from "~/src";
+import type { INoteName, IChordName, IChord, IPressedChordInfo, IGammeName } from "~/src";
 import { analyze } from "~/src/ChordAnalyser";
 import { off, on, pressedKeys } from "~/src/NoteHandler";
 import { chords, type IChordInfo } from "~/src/utils";
 
 const selectedNotes: Ref<INoteName[]> = ref(["C"]);
-const selectedMode: Ref<IChordName[]> = ref(["Major"]);
+const selectedMode: Ref<(IChordName | IGammeName)[]> = ref(["Major"]);
 
 let selectedChords: IChordInfo[] = [];
 const chordsToFound: Ref<IChord[]> = ref([]);
@@ -62,7 +62,7 @@ function pickChord(): IChord {
 
 <template>
   <div class="flex flex-col items-center justify-center h-full">
-    <div v-if="chordsToFound.length == 0">
+    <div v-show="chordsToFound.length == 0">
       <Selector
         :multiple="true"
         @select="
@@ -79,7 +79,7 @@ function pickChord(): IChord {
         Go!
       </div>
     </div>
-    <div class="grid grid-rows-2 w-full gap-12" v-else>
+    <div class="grid grid-rows-2 w-full gap-12" v-if="chordsToFound.length != 0">
       <div
         class="m-auto w-1/3 text-2xl font-bold hover:border-red-300 border-red-600 text-center border py-2 rounded-sm bg-red-600 cursor-pointer text-pallet-primary"
         @click="stop"

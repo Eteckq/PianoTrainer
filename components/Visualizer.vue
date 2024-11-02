@@ -38,7 +38,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-full w-full relative bg-black overflow-hidden" ref="topDiv">
+  <div class="h-full w-full relative overflow-hidden" ref="topDiv">
     <div class="absolute z-10 top-0 left-0 flex gap-4 w-full px-4 mt-2">
       <Param>
         <template #button> ✨ </template>
@@ -65,7 +65,12 @@ onUnmounted(() => {
         <span v-else>🟢</span>
       </div>
     </div>
-    <Application ref="application" class="absolute bottom-0">
+    <Application
+      :background-alpha="rectangleConfig.bg.alpha"
+      :background-color="rectangleConfig.bg.color"
+      ref="application"
+      class="absolute bottom-0"
+    >
       <Graphics v-for="rect in rects" @render="drawRectangle($event, rect)">
         <BlurFilter
           :strength="rectangleConfig.strength"

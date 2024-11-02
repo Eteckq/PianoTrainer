@@ -63,6 +63,10 @@ function initializeTicks() {
 }
 
 const rectangleConfig = ref({
+  bg: {
+    color: "#000000",
+    alpha: 1,
+  },
   color: {
     timeBased: false,
     aliveBased: false,

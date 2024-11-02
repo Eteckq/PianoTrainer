@@ -1,10 +1,20 @@
-import type { IChordName, INote, INoteName, IRect } from ".";
+import type { IChordName, IGammeName, INote, INoteName, IRect } from ".";
 
 export type IChordInfo = {
   name: IChordName;
   interval: number[];
   notation: string;
 };
+export type IGammeInfo = {
+  name: IGammeName;
+  interval: number[];
+  notation: string;
+};
+
+export const gammes : IGammeInfo[] = [
+  { name: "Gamme Major", interval: [0, 2, 4, 5, 7, 9, 11], notation: "maj" },
+  { name: "Gamme Minor", interval: [0, 2, 3, 5, 7, 8, 10], notation: "min" },
+]
 
 export const chords: IChordInfo[] = [
   { name: "Major", interval: [0, 4, 7], notation: "maj" },

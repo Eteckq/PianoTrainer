@@ -77,6 +77,8 @@ export type IChordName =
   | "Augmented"
   | "Augmented Major 7th";
 
+export type IGammeName = "Gamme Major" | "Gamme Minor";
+
 export interface IChord {
   note: INoteName;
   chord: IChordInfo;

@@ -1,25 +1,29 @@
 <script setup lang="ts">
-import type { IChordName, INoteName } from "~/src";
-import { chords, notesNames } from "~/src/utils";
+import type { IChordName, IGammeName, INoteName } from "~/src";
+import { chords, gammes, notesNames } from "~/src/utils";
 
 const props = defineProps({
   multiple: {
     type: Boolean,
     default: false,
   },
+  allowGamme: {
+    type: Boolean,
+    default: false,
+  },
 });
 const selectedNotes: Ref<INoteName[]> = ref(["C"]);
-const selectedChords: Ref<IChordName[]> = ref(["Major"]);
+const selectedChords: Ref<(IChordName | IGammeName)[]> = ref(["Major"]);
 
 if (props.multiple) {
   selectedNotes.value = [...notesNames];
 }
 
 const emits = defineEmits<{
-  select: [notes: INoteName[], chords: IChordName[]];
+  select: [notes: INoteName[], chords: (IChordName | IGammeName)[]];
 }>();
 
-function toggleSelectedChord(chord: IChordName) {
+function toggleSelectedChord(chord: IChordName | IGammeName) {
   append(selectedChords.value, chord);
 }
 
@@ -69,7 +73,8 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div class="">
+    <div class="flex gap-24">
+      <div class="">
       <h2 class="mb-3 font-medium">Chord</h2>
       <div
         class="border p-2 overflow-y-scroll scrollbar-thin scrollbar-thumb-slate-500 h-28 md:h-72"
@@ -85,6 +90,24 @@ onMounted(() => {
           {{ chord.name }}
         </div>
       </div>
+    </div>
+    <div v-if="allowGamme">
+      <h2 class="mb-3 font-medium">Gammes</h2>
+      <div
+        class="border p-2 overflow-y-scroll scrollbar-thin scrollbar-thumb-slate-500 h-28 md:h-72"
+      >
+        <div
+          @click="toggleSelectedChord(chord.name)"
+          :class="{
+            'text-pallet-secondary': selectedChords.some((c) => c == chord.name),
+          }"
+          class="cursor-pointer py-1"
+          v-for="chord in gammes"
+        >
+          {{ chord.name }}
+        </div>
+      </div>
+    </div>
     </div>
   </div>
 </template>
