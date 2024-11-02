@@ -20,8 +20,6 @@ export const connect = async () => {
   ws.value.addEventListener("message", async (event) => {
     const message: Message = JSON.parse(await event.data.text());
     if(message.cmd == 'note:on'){
-        console.log('get note');
-        
         emitNoteOn(message.note, message.vel, NoteOrigin.SOCKET)
     }
     if(message.cmd == 'note:off'){

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { connect, disconnect, ws } from "~/src/socket";
+await connect()
 </script>
 
 <template>

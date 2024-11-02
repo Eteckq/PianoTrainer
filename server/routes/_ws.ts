@@ -13,6 +13,8 @@ export default defineWebSocketHandler({
   },
   message(peer, message) {
     const json: Message = message.json();
+    console.log(peer.peers.size);
+    
     peer.publish("piano", message);
   },
   // close(peer) {
