@@ -11,11 +11,11 @@ export default defineWebSocketHandler({
   open(peer) {
     peer.subscribe("piano");
   },
-  message(peer, message) {
-    const json: Message = message.json();
+  message(peer, m) {
+    const json: Message = JSON.parse(m.text());
     console.log(peer.peers.size);
     
-    peer.publish("piano", message);
+    peer.publish("piano", m);
   },
   // close(peer) {
   //   peer.publish("piano", { user: "server", message: `${peer} left!` });
