@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import { loadPack } from '~/src/audio/engine';
-
 const show = ref(false);
-
-loadPack("piano")
 </script>
 
 <template>
@@ -16,7 +12,6 @@ loadPack("piano")
     >
       <span :class="{ 'opacity-50': !show }">⚙️</span>
     </div>
-
     <Navbar />
     <div class="grow w-full">
       <slot />

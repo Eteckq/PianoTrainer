@@ -1,10 +1,12 @@
 <template>
   <div class="">
+    {{ isLoading }}
     <canvas @click="pressNote" ref="canvas"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
+import { isLoading } from "~/src/audio/engine";
 import {
   emitNoteOff,
   emitNoteOn,
