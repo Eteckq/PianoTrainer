@@ -1,7 +1,23 @@
-import { NoteOrigin, emitNoteOff, emitNoteOn, emitSustainOn, emitSustainOff, on } from "../NoteHandler";
+import {
+  NoteOrigin,
+  emitNoteOff,
+  emitNoteOn,
+  emitSustainOn,
+  emitSustainOff,
+  on,
+} from "../NoteHandler";
 
-let outputsActivated: MIDIOutput[] = [];
-let inputsActivated: MIDIInput[] = [];
+export interface OutputWithOrigins {
+  device: MIDIOutput;
+  origins: NoteOrigin[];
+}
+
+export interface Input {
+  device: MIDIInput;
+}
+
+let outputsActivated: OutputWithOrigins[] = [];
+let inputsActivated: Input[] = [];
 let webmidi: MIDIAccess | undefined;
 
 async function initMidiHandler() {
@@ -27,21 +43,24 @@ async function initMidiHandler() {
   });
 
   on("note:on", (note, vel, origin) => {
-    if (origin !== NoteOrigin.DEVICE) sendNote(note, vel);
+    sendNote(note, vel, origin);
   });
   on("note:off", (note, origin) => {
-    if (origin !== NoteOrigin.DEVICE) sendNoteOff(note);
+    sendNoteOff(note, origin);
   });
 }
 
 function enableOutput(device: MIDIOutput): void {
-  if (outputsActivated.some((d) => d.id === device.id)) return;
-  outputsActivated.push(device);
+  if (outputsActivated.some((d) => d.device.id === device.id)) return;
+  outputsActivated.push({
+    device: device,
+    origins: [NoteOrigin.APP, NoteOrigin.MOUSE],
+  });
 }
 
 function enableInput(device: MIDIInput): void {
-  if (inputsActivated.some((d) => d.id === device.id)) return;
-  inputsActivated.push(device);
+  if (inputsActivated.some((d) => d.device.id === device.id)) return;
+  inputsActivated.push({ device });
 
   device.onmidimessage = (evt: MIDIMessageEvent) => {
     if (!evt.data) return;
@@ -64,27 +83,35 @@ function enableInput(device: MIDIInput): void {
   };
 }
 
-function sendNote(note: number, vel: number): void {
-  outputsActivated.forEach((device) => {
-    device.send([0x90, note, vel]);
-  });
+function sendNote(note: number, vel: number, origin: NoteOrigin): void {
+  // Object.values(NoteOrigin).forEach((key, index) => {
+  //   console.log(`${key} has index ${index}`)
+  // })
+  outputsActivated
+    .filter((d) => d.origins.includes(origin))
+    .forEach((device) => {
+      device.device.send([0x90, note, vel]);
+    });
 }
 
-function sendNoteOff(note: number): void {
-  sendNote(note, 0);
+function sendNoteOff(note: number, origin: NoteOrigin): void {
+  sendNote(note, 0, origin);
 }
 
 function disableOutput(id: string): void {
-  outputsActivated = outputsActivated.filter((device) => device.id !== id);
-  
+  outputsActivated = outputsActivated.filter(
+    (device) => device.device.id !== id
+  );
 }
 
 function disableInput(id: string): void {
-  const deviceToDisable = inputsActivated.find((device) => device.id === id);
+  const deviceToDisable = inputsActivated.find(
+    (device) => device.device.id === id
+  );
   if (!deviceToDisable) return;
 
-  deviceToDisable.onmidimessage = null;
-  inputsActivated = inputsActivated.filter((device) => device.id !== id);
+  deviceToDisable.device.onmidimessage = null;
+  inputsActivated = inputsActivated.filter((device) => device.device.id !== id);
 }
 
 initMidiHandler();

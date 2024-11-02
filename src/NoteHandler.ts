@@ -1,10 +1,11 @@
 import { EventEmitter } from "events";
 
 export enum NoteOrigin {
-  DEVICE,
-  MOUSE,
-  APP,
+  DEVICE='d',
+  MOUSE='m',
+  APP='a',
 }
+
 
 interface INoteHandlerEvents {
   "note:on": (note: number, vel: number, origin: NoteOrigin) => void;

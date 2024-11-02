@@ -223,7 +223,7 @@ export {
   resize,
   getKeyAtPoint,
   initCanvas,
-  setHighlightedKeys as setHightligtedKeys,
+  setHighlightedKeys,
   pianoCanvas,
-  getKeyPositions as buildRects,
+  getKeyPositions,
 };

@@ -2,7 +2,7 @@ import * as particles from "@pixi/particle-emitter";
 import type { IKeyPosition, ParticleConfigOptions } from "..";
 import { Container } from "@pixi/display";
 import { Application as Application$1 } from "@pixi/app";
-import { buildRects } from "./piano";
+import { getKeyPositions } from "./piano";
 import { getColorFromNumber } from "../utils";
 import { Application, onTick, type GraphicsInst } from "vue3-pixi";
 import { getData, setData } from "nuxt-storage/local-storage";
@@ -192,7 +192,7 @@ function addEmitterKeys(
     emitterKeys.splice(0, emitterKeys.length);
   }
 
-  for (const key of buildRects()) {
+  for (const key of getKeyPositions()) {
     const emitter = new particles.Emitter(
       container,
       createParticleConfig(key, config)
@@ -263,5 +263,5 @@ export {
   initializeTicks,
   setMounted,
   mountInit,
-  updateParticles
+  updateParticles,
 };

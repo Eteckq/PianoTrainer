@@ -56,7 +56,11 @@ onUnmounted(() => {
         </template>
       </Param>
 
-      <div v-if="application?.canvas && pianoCanvas" @click="record(application.canvas, pianoCanvas)" class="cursor-pointer ml-auto">
+      <div
+        v-if="application?.canvas && pianoCanvas"
+        @click="record(application.canvas, pianoCanvas)"
+        class="cursor-pointer ml-auto"
+      >
         <span v-if="isRecording">🔴</span>
         <span v-else>🟢</span>
       </div>

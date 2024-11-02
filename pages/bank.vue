@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { IChordName, INoteName } from "~/src";
-import { setHightligtedKeys } from "~/src/renders/piano";
+import { setHighlightedKeys } from "~/src/renders/piano";
 import { chords, getMidiFromNote, notes } from "~/src/utils";
 
 function refreshHighlight(
@@ -19,11 +19,11 @@ function refreshHighlight(
     )
     .map((note) => note.midi);
 
-  setHightligtedKeys(highlightedKeys);
+    setHighlightedKeys(highlightedKeys);
 }
 
 onBeforeUnmount(() => {
-  setHightligtedKeys([]);
+  setHighlightedKeys([]);
 });
 </script>
 
