@@ -7,9 +7,21 @@ import {
   enableOutput,
   disableInput,
   disableOutput,
+  type OutputWithOrigins,
 } from "~/src/handlers/midi";
+import type { NoteOrigin } from "~/src/NoteHandler";
 const key = ref(0);
 const opened = ref();
+
+function toggleOrigin(output: OutputWithOrigins, origin: NoteOrigin) {
+  const contain = output.origins.findIndex((n) => n == origin);
+  if (contain != -1) {
+    output.origins.splice(contain, 1);
+  } else {
+    output.origins.push(origin);
+  }
+  key.value++;
+}
 
 onMounted(() => {
   const interval = setInterval(() => {
@@ -43,6 +55,7 @@ onMounted(() => {
         <ParamMIDIDevices
           :key="key"
           title="Outputs"
+          @toggleOrigin="toggleOrigin"
           :fc-disable="(id: string)=>{disableOutput(id); key++}"
           :fc-enable="(id: MIDIOutput)=>{enableOutput(id); key++}"
           :devices="webmidi.outputs"
