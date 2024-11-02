@@ -5,11 +5,11 @@ const opened = defineModel({ default: false });
 <template>
   <!-- Open Button -->
   <div
-    class="py-2 px-4 bg-pallet-secondary rounded cursor-pointer relative"
+    class="cursor-pointer"
     :class="{ 'bg-opacity-85': opened }"
     @click="opened = !opened"
   >
-    <slot name="title" />
+    <slot name="button" />
   </div>
   <!-- Modal -->
   <ParamModal v-model="opened">

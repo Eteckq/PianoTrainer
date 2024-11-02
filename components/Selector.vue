@@ -79,7 +79,7 @@ onMounted(() => {
           :class="{
             'text-pallet-secondary': selectedChords.some((c) => c == chord.name),
           }"
-          class="cursor-pointer py-1 hover:text-opacity-30"
+          class="cursor-pointer py-1"
           v-for="chord in chords"
         >
           {{ chord.name }}

@@ -1,4 +1,4 @@
-import type { IKey } from "..";
+import type { IKey, IKeyPosition, INote } from "..";
 import { pressedKeys } from "../NoteHandler";
 import {
   bottomNote,
@@ -13,26 +13,22 @@ const FACTOR_BLACK_KEYS_HEIGHT = 1.6;
 let ctx: CanvasRenderingContext2D | null;
 let pianoCanvas: HTMLCanvasElement | null;
 
-export const keys: Ref<IKey[]> = ref([]);
+const keys: Ref<IKey[]> = ref([]);
 
 let hightligtedKeys: { midi: number; color: string }[] = [];
 
-let whiteKeyWidth!: number;
-let blackKeyWidth!: number;
-let whiteKeyHeight!: number;
-let blackKeyHeight!: number;
+let whiteKeyWidth = window.innerWidth / getNumWhiteKeys();
+let blackKeyWidth = whiteKeyWidth * (7 / 12);
+let whiteKeyHeight: number = window.innerWidth / 8;
+let blackKeyHeight: number = whiteKeyHeight / FACTOR_BLACK_KEYS_HEIGHT;
 
 function initCanvas(canvas: HTMLCanvasElement) {
-  pianoCanvas = canvas
+  pianoCanvas = canvas;
   ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("2D Context not found");
 
   resize();
   render();
-}
-
-function getPianoRects() {
-  return keys.value;
 }
 
 function setHighlightedKeys(notes: number[], color: string = "yellow") {
@@ -61,7 +57,7 @@ function resize(width: number = window.innerWidth) {
 
   ctx.canvas.width = getWidth();
   ctx.canvas.height = whiteKeyHeight;
-  buildRects();
+  keys.value = getRects();
   redraw();
 }
 
@@ -71,49 +67,54 @@ function getKeyAtPoint(e: MouseEvent) {
   const canvasY = e.clientY - ctx.canvas.getBoundingClientRect().top;
 
   if (canvasY < blackKeyHeight)
-    for (const key of getPianoRects().filter((k) => k.note.black == true))
+    for (const key of keys.value.filter((k) => k.note.black == true))
       if (contains(key.rect, canvasX, canvasY)) return key;
 
-  for (const key of getPianoRects().filter((k) => k.note.black == false))
+  for (const key of keys.value.filter((k) => k.note.black == false))
     if (contains(key.rect, canvasX, canvasY)) return key;
 
   return null;
 }
 
-function buildRects() {
+function getRects(): IKey[] {
+  return getKeyPositions().map((k) => {
+    return {
+      rect: {
+        w: k.w,
+        x: k.x,
+        y: 0,
+        h: k.note.black ? blackKeyHeight : whiteKeyHeight,
+      },
+      note: k.note,
+    };
+  });
+}
+
+function getKeyPositions(): IKeyPosition[] {
   let curXWhitePos = 0;
   let curXBlackPos = blackKeyWidth / 2;
-  keys.value = [];
+  const rects = [];
   for (var midiNote = bottomNote; midiNote <= topNote; midiNote++) {
     const note = getNoteFromMidiNote(midiNote);
     if (!note) continue;
     if (!isBlackKey(midiNote)) {
-      const rect = {
+      rects.push({
         x: curXWhitePos,
-        y: 0,
         w: whiteKeyWidth,
-        h: whiteKeyHeight,
-      };
-      keys.value.push({
-        rect,
         note: note,
       });
       curXWhitePos += whiteKeyWidth;
       curXBlackPos += blackKeyWidth;
     } else {
-      const rect = {
+      rects.push({
         x: curXBlackPos,
-        y: 0,
         w: blackKeyWidth,
-        h: blackKeyHeight,
-      };
-      keys.value.push({
-        rect,
         note: note,
       });
       curXBlackPos += blackKeyWidth;
     }
   }
+  return rects;
 }
 
 function redraw() {
@@ -223,6 +224,6 @@ export {
   getKeyAtPoint,
   initCanvas,
   setHighlightedKeys as setHightligtedKeys,
-  getPianoRects,
-  pianoCanvas
+  pianoCanvas,
+  getKeyPositions as buildRects,
 };

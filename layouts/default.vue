@@ -7,10 +7,10 @@ const show = ref(false);
     class="flex flex-col transition-all duration-500 text-white h-screen overflow-hidden"
   >
     <div
-      class="absolute top-2 right-2 z-10 cursor-pointer"
+      class="absolute bottom-2 right-2 z-10 cursor-pointer"
       @click="show = !show"
     >
-      <span v-if="!show">Show</span> <span v-else>Hide</span> bottom bar
+      <span :class="{ 'opacity-50': !show }">⚙️</span>
     </div>
 
     <Navbar />
@@ -18,6 +18,9 @@ const show = ref(false);
       <slot />
     </div>
     <Piano />
-    <BottomBar class="transition-all duration-500" :class="{ 'h-0': !show }" />
+    <BottomBar
+      class="transition-all duration-500"
+      :class="[show ? 'h-16' : 'h-0']"
+    />
   </div>
 </template>

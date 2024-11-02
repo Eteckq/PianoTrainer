@@ -25,7 +25,6 @@ export interface ParticleConfigOptions {
   textures: string[];
 }
 
-
 export type IPressedChordInfo = {
   chord: string;
   note: INoteName;
@@ -79,8 +78,8 @@ export type IChordName =
   | "Augmented Major 7th";
 
 export interface IChord {
-  note: INoteName,
-  chord: IChordInfo
+  note: INoteName;
+  chord: IChordInfo;
 }
 
 /**
@@ -103,5 +102,11 @@ export interface INote {
  */
 export interface IKey {
   rect: IRect;
+  note: INote;
+}
+
+export interface IKeyPosition {
+  x: number;
+  w: number;
   note: INote;
 }

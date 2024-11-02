@@ -26,6 +26,9 @@ onMounted(() => {
 
 <template>
   <Param v-model="opened">
+    <template #button>
+      <div class="py-2 px-4 bg-pallet-secondary rounded">MIDI Params</div>
+    </template>
     <template #title>MIDI Connections</template>
     <template #content>
       <div class="flex flex-col" v-if="webmidi">

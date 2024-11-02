@@ -124,6 +124,19 @@ export function contains(rect: IRect, x: number, y: number){
   );
 }
 
+export function getColorFromNumber(value: number): string {
+  // Utilisation de fonctions sinusoïdales pour générer des valeurs entre 0 et 255
+  const red = Math.floor((Math.sin(value * 0.1) + 1) * 127.5);
+  const green = Math.floor((Math.sin(value * 0.1 + 2) + 1) * 127.5);
+  const blue = Math.floor((Math.sin(value * 0.1 + 4) + 1) * 127.5);
+
+  // Conversion en format hexadécimal et ajout de zéros initiaux si nécessaire
+  const redHex = red.toString(16).padStart(2, "0");
+  const greenHex = green.toString(16).padStart(2, "0");
+  const blueHex = blue.toString(16).padStart(2, "0");
+
+  return `#${redHex}${greenHex}${blueHex}`;
+}
 
 export class CanvasRecorder {
   private recordedBlobs: Blob[];
@@ -152,7 +165,7 @@ export class CanvasRecorder {
   }
 
   private handleStop(event: Event) {
-    console.log('Recorder stopped: ', event);
+    // console.log('Recorder stopped: ', event);
     const superBuffer = new Blob(this.recordedBlobs, { type: this.supportedType || 'video/webm' });
     this.video.src = URL.createObjectURL(superBuffer);
   }
@@ -202,7 +215,7 @@ export class CanvasRecorder {
   public stopRecording() {
     if (this.mediaRecorder) {
       this.mediaRecorder.stop();
-      console.log('Recorded Blobs: ', this.recordedBlobs);
+      // console.log('Recorded Blobs: ', this.recordedBlobs);
       this.video.controls = true;
     }
   }
