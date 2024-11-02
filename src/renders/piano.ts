@@ -1,4 +1,5 @@
 import type { IKey, IKeyPosition, INote } from "..";
+import { isLoading } from "../audio/engine";
 import { pressedKeys } from "../NoteHandler";
 import {
   bottomNote,
@@ -145,7 +146,12 @@ function drawKeys() {
     const defaultGradient = key.note.black ? blackRadient : whiteGradient;
     const customGradient = ctx.createLinearGradient(0, 0, 0, 100);
 
-    if (hightligtedKey) {
+    if (!isLoading.value.includes(key.note.midi)){
+      customGradient.addColorStop(0, key.note.black ? "black" : "grey");
+      customGradient.addColorStop(1, key.note.black ? "grey" : "black");
+      ctx.fillStyle = customGradient;
+    }
+    else if (hightligtedKey) {
       customGradient.addColorStop(0, key.note.black ? "#2b2b2b" : "grey");
       customGradient.addColorStop(1, hightligtedKey.color);
       ctx.fillStyle = customGradient;

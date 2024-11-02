@@ -1,6 +1,5 @@
 <template>
   <div class="">
-    {{ isLoading }}
     <canvas @click="pressNote" ref="canvas"></canvas>
   </div>
 </template>

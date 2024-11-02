@@ -42,17 +42,20 @@ interface PackInfo {
 }
 
 const sounds = ref(new Map<number, AudioBuffer>());
-export const isLoading = ref(false);
+export const isLoading: Ref<number[]> = ref([]);
 export async function loadPack(pack: string) {
-  isLoading.value = true;
+  isLoading.value = [];
   const packUrl = `/sounds/${pack}`;
   const infoJson = await $fetch<PackInfo>(`${packUrl}/info.json`);
 
   for (const i in notes) {
     const note = notes[i];
-    await load(note.midi, `/sounds/${pack}/${infoJson.keys[i]}${infoJson.ext}`);
+    load(note.midi, `/sounds/${pack}/${infoJson.keys[i]}${infoJson.ext}`).then(
+      () => {
+        isLoading.value.push(note.midi);
+      }
+    );
   }
-  isLoading.value = false;
 }
 
 async function load(id: number, url: string): Promise<void> {
