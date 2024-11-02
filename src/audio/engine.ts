@@ -75,11 +75,14 @@ async function load(id: number, url: string): Promise<void> {
   });
 }
 
+interface PlayerNote {
+  gain: GainNode;
+  source: AudioBufferSourceNode;
+  sustained: boolean;
+}
+
 export const sustain = ref(false);
-const played = new Map<
-  number,
-  { source: AudioBufferSourceNode; sustained: boolean }[]
->();
+const played = new Map<number, PlayerNote[]>();
 
 export function playNote(midi: number, vel: number) {
   const audioNote: AudioBuffer | undefined = sounds.value.get(midi);
@@ -100,6 +103,7 @@ export function playNote(midi: number, vel: number) {
 
   played.get(midi)?.push({
     source,
+    gain,
     sustained: false,
   });
 }
@@ -113,16 +117,26 @@ export function stopPlayNote(midi: number) {
   if (sustain.value) return;
 
   played.get(midi)?.forEach((k) => {
-    k.source.stop();
+    stopPlayerNote(k)
   });
   played.set(midi, []);
+}
+
+function stopPlayerNote(pNote: PlayerNote, delay= 0) {
+  if(!context) return
+  const time = context.currentTime + (delay / 1000)
+  
+  pNote.gain.gain.setValueAtTime(pNote.gain.gain.value, time);
+  pNote.gain.gain.linearRampToValueAtTime(pNote.gain.gain.value * 0.1, time + 0.16);
+  pNote.gain.gain.linearRampToValueAtTime(0.0, time + 0.4);
+  pNote.source.stop(time + 0.41);
 }
 
 function stopSustainedNotes() {
   for (const key of played) {
     key[1] = key[1].filter((k) => {
       if (k.sustained) {
-        k.source.stop();
+        stopPlayerNote(k)
       } else {
         return k;
       }
