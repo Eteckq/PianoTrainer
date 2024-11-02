@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import { sustain } from "~/src/audio/engine";
+import { emitSustainOff, emitSustainOn, NoteOrigin } from "~/src/NoteHandler";
 import { connect, disconnect, ws } from "~/src/socket";
 await connect()
 </script>
 
 <template>
+  <div class="absolute" v-if="!sustain" @click="emitSustainOn(NoteOrigin.MOUSE)">{{sustain}}</div>
+  <div class="absolute" v-else @click="emitSustainOff(NoteOrigin.MOUSE)">{{sustain}}</div>
   <div class="bg-pallet-primary text-pallet-primary overflow-hidden">
     <div class="flex items-center gap-4 p-4">
       <ParamMIDI />
-
       <Param>
         <template #button>
           <div class="py-2 px-4 bg-pallet-secondary rounded">Socket</div>

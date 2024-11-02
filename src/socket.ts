@@ -1,5 +1,12 @@
 import type { MessageSocket } from "~/server/routes/_ws";
-import { emitNoteOff, emitNoteOn, NoteOrigin, on } from "./NoteHandler";
+import {
+  emitNoteOff,
+  emitNoteOn,
+  emitSustainOff,
+  emitSustainOn,
+  NoteOrigin,
+  on,
+} from "./NoteHandler";
 
 function log(u: string, ...m: string[]) {
   console.log(u, m);
@@ -15,15 +22,21 @@ export const connect = async () => {
   }
 
   log("ws", "Connecting to", url, "...");
-  ws.value = (new WebSocket(url));
+  ws.value = new WebSocket(url);
 
   ws.value.addEventListener("message", async (event) => {
     const message: MessageSocket = JSON.parse(event.data);
-    if(message.cmd == 'note:on'){
-        emitNoteOn(message.note, message.vel, NoteOrigin.SOCKET)
+    if (message.cmd == "note:on") {
+      emitNoteOn(message.note, message.vel, NoteOrigin.SOCKET);
     }
-    if(message.cmd == 'note:off'){
-        emitNoteOff(message.note, NoteOrigin.SOCKET)
+    if (message.cmd == "note:off") {
+      emitNoteOff(message.note, NoteOrigin.SOCKET);
+    }
+    if (message.cmd == "sustain:on") {
+      emitSustainOn(NoteOrigin.SOCKET);
+    }
+    if (message.cmd == "sustain:off") {
+      emitSustainOff(NoteOrigin.SOCKET);
     }
   });
 
@@ -31,21 +44,29 @@ export const connect = async () => {
   log("ws", "Connected!");
 };
 
-export function disconnect(){
+export function disconnect() {
   if (ws.value) {
     ws.value.close();
-    ws.value = null
+    ws.value = null;
   }
 }
 
-
-
 on("note:on", (note, vel, origin) => {
-  if(origin == NoteOrigin.SOCKET || !ws.value) return
+  if (origin == NoteOrigin.SOCKET || !ws.value) return;
   ws.value.send(JSON.stringify({ cmd: "note:on", note, vel, origin }));
 });
 
 on("note:off", (note, origin) => {
-  if(origin == NoteOrigin.SOCKET || !ws.value) return
+  if (origin == NoteOrigin.SOCKET || !ws.value) return;
   ws.value.send(JSON.stringify({ cmd: "note:off", note, origin }));
+});
+
+on("sustain:on", (origin) => {
+  if (origin == NoteOrigin.SOCKET || !ws.value) return;
+  ws.value.send(JSON.stringify({ cmd: "sustain:on", origin }));
+});
+
+on("sustain:off", (origin) => {
+  if (origin == NoteOrigin.SOCKET || !ws.value) return;
+  ws.value.send(JSON.stringify({ cmd: "sustain:off", origin }));
 });

@@ -60,7 +60,7 @@ export async function loadPack(pack: string) {
 //   });
 // }
 
-let sustain = false
+export const sustain = ref(false)
 
 export function playNote(midi: number, vel: number) {
   const s = sounds.get(midi);
@@ -77,7 +77,8 @@ export function stopPlayNote(midi: number) {
   const s = sounds.get(midi);
   if (!s) return;
   s.sustained = true
-  if(sustain) return
+  
+  if(sustain.value) return
     
   s.currentTime = 0
   s.muted = true
@@ -100,11 +101,11 @@ on("note:off", (note, origin) => {
 });
 
 on("sustain:on", () => {
-  sustain = true
+  sustain.value = true
 });
 
 on("sustain:off", () => {
   stopSustainedNotes()
-  sustain = false
+  sustain.value = false
 });
 
