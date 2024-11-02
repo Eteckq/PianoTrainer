@@ -1,4 +1,4 @@
-import type { Message } from "~/server/routes/_ws";
+import type { MessageSocket } from "~/server/routes/_ws";
 import { emitNoteOff, emitNoteOn, NoteOrigin, on } from "./NoteHandler";
 
 function log(u: string, ...m: string[]) {
@@ -18,7 +18,7 @@ export const connect = async () => {
   ws.value = (new WebSocket(url));
 
   ws.value.addEventListener("message", async (event) => {
-    const message: Message = JSON.parse(await event.data.text());
+    const message: MessageSocket = JSON.parse(await event.data.text());
     if(message.cmd == 'note:on'){
         emitNoteOn(message.note, message.vel, NoteOrigin.SOCKET)
     }

@@ -1,6 +1,6 @@
 import { INoteHandlerEvents, NoteOrigin } from "~/src/NoteHandler";
 
-export interface Message {
+export interface MessageSocket {
   cmd: keyof INoteHandlerEvents;
   note: number;
   vel: number;
@@ -12,7 +12,7 @@ export default defineWebSocketHandler({
     peer.subscribe("piano");
   },
   message(peer, m) {
-    peer.publish("piano", m);
+    peer.publish("piano", m.toString());
   },
   // close(peer) {
   //   peer.publish("piano", { user: "server", message: `${peer} left!` });
