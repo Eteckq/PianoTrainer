@@ -95,7 +95,6 @@ export default defineWebSocketHandler({
         room = joinOrCreate(roomMessage.name, peer);
         break;
     }
-    console.log(rooms);
   },
   close(peer) {
     kickUserFromEveryRooms(peer);

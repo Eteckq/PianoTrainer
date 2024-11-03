@@ -1,49 +1,42 @@
 <script setup lang="ts">
+import VueDraggableResizable from "vue-draggable-resizable";
 const opened = defineModel({ default: false });
-
-const modal = ref();
-
-function draggable(el: HTMLElement) {
-  el.addEventListener("mousedown", function (e) {
-    var offsetX = e.clientX - parseInt(window.getComputedStyle(this).left);
-    var offsetY = e.clientY - parseInt(window.getComputedStyle(this).top);
-
-    function mouseMoveHandler(e: MouseEvent) {
-      el.style.top = e.clientY - offsetY + "px";
-      el.style.left = e.clientX - offsetX + "px";
-    }
-
-    function reset() {
-      window.removeEventListener("mousemove", mouseMoveHandler);
-      window.removeEventListener("mouseup", reset);
-    }
-
-    window.addEventListener("mousemove", mouseMoveHandler);
-    window.addEventListener("mouseup", reset);
-  });
-}
-
-onMounted(() => {
-  modal.value.style.top = 100 + "px";
-  draggable(modal.value);
-});
 
 </script>
 
 <template>
   <!-- Modal -->
-  <div ref="modal" v-show="opened" class="rounded bg-pallet-secondary absolute border overflow-y-scroll overflow-x-hidden scrollbar-thin z-10" style="max-height: 50vh;">
-    <div
-      class="w-full border-b p-2 flex gap-6 items-center justify-between cursor-move font-medium text-xl"
+  <Teleport to="body">
+    <vue-draggable-resizable
+      v-show="opened"
+      class="absolute bg-pallet-secondary top-16 left-16"
+      :minHeight="100"
+      :minWidth="300"
+      :z="300"
+      :w="300"
+      :h="400"
+      drag-handle=".header"
     >
-      <slot name="title" />
       <div
-        class="cursor-pointer p-1 transform rotate-45 text-3xl hover:text-gray-800"
-        @click="opened = false"
+        class="header w-full border-b p-2 flex gap-6 items-center justify-between cursor-move font-medium text-xl"
       >
-        +
+        <slot name="title" />
+        <div
+          class="cursor-pointer p-1 transform rotate-45 text-3xl hover:text-gray-800"
+          @click="opened = false"
+        >
+          +
+        </div>
       </div>
-    </div>
-    <slot name="content" />
-  </div>
+      <div class="overflow-y-scroll h-full scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pallet-primary content">
+        <slot name="content" />
+      </div>
+    </vue-draggable-resizable>
+  </Teleport>
 </template>
+
+<style scoped>
+.content {
+  height: calc(100% - 61px)
+}
+</style>

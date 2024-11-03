@@ -18,6 +18,7 @@
     "nuxt-storage": "^1.2.2",
     "pinia": "^2.2.4",
     "vue": "latest",
+    "vue-draggable-resizable": "^3.0.0",
     "vue-router": "latest",
     "vue3-pixi": "^0.9.3",
     "vue3-pixi-nuxt": "^0.9.3"
