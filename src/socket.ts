@@ -1,4 +1,8 @@
-import type { MessageSocket } from "~/server/routes/_ws";
+import type {
+  MessageType,
+  PianoMessage,
+  RoomMessage,
+} from "~/server/routes/_ws";
 import {
   emitNoteOff,
   emitNoteOn,
@@ -8,65 +12,126 @@ import {
   on,
 } from "./NoteHandler";
 
-function log(u: string, ...m: string[]) {
-  console.log(u, m);
-}
-export let ws: Ref<WebSocket | null> = ref(null);
+export const ws: Ref<WebSocket | null> = ref(null);
+export const connected = ref(false);
+export const roomInfo = reactive({name: '', users: 0});
 
 export const connect = async () => {
   const isSecure = location.protocol === "https:";
   const url = (isSecure ? "wss://" : "ws://") + location.host + "/_ws";
   if (ws.value) {
-    log("ws", "Closing previous connection before reconnecting...");
     ws.value.close();
   }
 
-  log("ws", "Connecting to", url, "...");
-  ws.value = new WebSocket(url);
+  // log("ws", "Connecting to", url, "...");
 
-  ws.value.addEventListener("message", async (event) => {
-    const message: MessageSocket = JSON.parse(event.data);
-    if (message.cmd == "note:on") {
-      emitNoteOn(message.note, message.vel, NoteOrigin.SOCKET);
-    }
-    if (message.cmd == "note:off") {
-      emitNoteOff(message.note, NoteOrigin.SOCKET);
-    }
-    if (message.cmd == "sustain:on") {
-      emitSustainOn(NoteOrigin.SOCKET);
-    }
-    if (message.cmd == "sustain:off") {
-      emitSustainOff(NoteOrigin.SOCKET);
-    }
+  return new Promise((resolve) => {
+    ws.value = new WebSocket(url);
+
+    ws.value.addEventListener("message", async (event) => {
+      const message: MessageType = JSON.parse(event.data);
+
+      switch (message.type) {
+        case "piano":
+          const pianoMessage = message as PianoMessage;
+          if (pianoMessage.cmd == "note:on") {
+            if (!pianoMessage.note || !pianoMessage.vel) break;
+            emitNoteOn(pianoMessage.note, pianoMessage.vel, NoteOrigin.SOCKET);
+          }
+          if (pianoMessage.cmd == "note:off") {
+            if (!pianoMessage.note) break;
+            emitNoteOff(pianoMessage.note, NoteOrigin.SOCKET);
+          }
+          if (pianoMessage.cmd == "sustain:on") {
+            emitSustainOn(NoteOrigin.SOCKET);
+          }
+          if (pianoMessage.cmd == "sustain:off") {
+            emitSustainOff(NoteOrigin.SOCKET);
+          }
+          break;
+        case "room":
+          const roomMessage = message as RoomMessage;
+          if(!roomMessage.users) return
+          roomInfo.name = roomMessage.name
+          roomInfo.users = roomMessage.users
+          break;
+      }
+    });
+
+    ws.value.addEventListener("error", async (event) => {
+      connected.value = false;
+    });
+
+    ws.value.addEventListener("close", async (event) => {
+      connected.value = false;
+    });
+
+    ws.value.addEventListener("open", async (event) => {
+      connected.value = true;
+      resolve(true);
+    });
   });
-
-  await new Promise((resolve) => ws.value?.addEventListener("open", resolve));
-  log("ws", "Connected!");
 };
 
+export function joinRoom(room: string){
+  const message: RoomMessage = {
+    type: "room",
+    name: room
+  };
+  ws.value?.send(JSON.stringify(message));
+}
+
 export function disconnect() {
+  connected.value = false;
   if (ws.value) {
     ws.value.close();
     ws.value = null;
   }
 }
 
+const socketGuard = (origin: NoteOrigin) => {
+  return origin == NoteOrigin.SOCKET || !ws.value || !connected.value;
+};
+
 on("note:on", (note, vel, origin) => {
-  if (origin == NoteOrigin.SOCKET || !ws.value) return;
-  ws.value.send(JSON.stringify({ cmd: "note:on", note, vel, origin }));
+  if (socketGuard(origin)) return;
+  const message: PianoMessage = {
+    type: "piano",
+    cmd: "note:on",
+    note,
+    vel,
+    origin,
+  };
+  ws.value?.send(JSON.stringify(message));
 });
 
 on("note:off", (note, origin) => {
-  if (origin == NoteOrigin.SOCKET || !ws.value) return;
-  ws.value.send(JSON.stringify({ cmd: "note:off", note, origin }));
+  if (socketGuard(origin)) return;
+  const message: PianoMessage = {
+    type: "piano",
+    cmd: "note:off",
+    note,
+    origin,
+  };
+  ws.value?.send(JSON.stringify(message));
 });
 
 on("sustain:on", (origin) => {
-  if (origin == NoteOrigin.SOCKET || !ws.value) return;
-  ws.value.send(JSON.stringify({ cmd: "sustain:on", origin }));
+  if (socketGuard(origin)) return;
+  const message: PianoMessage = {
+    type: "piano",
+    cmd: "sustain:on",
+    origin,
+  };
+  ws.value?.send(JSON.stringify(message));
 });
 
 on("sustain:off", (origin) => {
-  if (origin == NoteOrigin.SOCKET || !ws.value) return;
-  ws.value.send(JSON.stringify({ cmd: "sustain:off", origin }));
+  if (socketGuard(origin)) return;
+  const message: PianoMessage = {
+    type: "piano",
+    cmd: "sustain:off",
+    origin,
+  };
+  ws.value?.send(JSON.stringify(message));
 });
