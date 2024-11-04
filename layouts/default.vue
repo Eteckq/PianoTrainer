@@ -13,7 +13,9 @@ const show = ref(false);
       <span :class="{ 'opacity-50': !show }">⚙️</span>
     </div>
     <Navbar />
-    <div class="grow w-full">
+    <div
+      class="grow w-full overflow-y-scroll scrollbar-thin scrollbar-thumb-transparent scrollbar-track-transparent"
+    >
       <slot />
     </div>
     <Piano />
