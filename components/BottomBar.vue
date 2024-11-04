@@ -4,7 +4,6 @@
   <div class="bg-pallet-primary text-pallet-primary overflow-hidden">
     <div class="flex items-center gap-4 p-4">
       <ParamMIDI />
-      <ParamSocket />
     </div>
   </div>
 </template>

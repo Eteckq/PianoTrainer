@@ -16,3 +16,7 @@ body {
 .page-leave-to {
   opacity: 0;
 }
+
+.jse-absolute-popup{
+  position: absolute!important;
+}

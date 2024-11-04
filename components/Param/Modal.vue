@@ -13,7 +13,7 @@ const opened = defineModel({ default: false });
       :minHeight="100"
       :minWidth="300"
       :z="300"
-      :w="300"
+      :w="335"
       :h="400"
       drag-handle=".header"
     >
