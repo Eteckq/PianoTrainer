@@ -94,6 +94,9 @@ export function playNote(midi: number, vel: number) {
   gain.gain.value = vel / 127;
   gain.connect(context.destination);
   source.connect(gain);
+  if (recordingstream) {
+    source.connect(recordingstream);
+  }
   source.start();
 
   if (!played.get(midi)) {
@@ -116,17 +119,20 @@ export function stopPlayNote(midi: number) {
   if (sustain.value) return;
 
   played.get(midi)?.forEach((k) => {
-    stopPlayerNote(k)
+    stopPlayerNote(k);
   });
   played.set(midi, []);
 }
 
-function stopPlayerNote(pNote: PlayerNote, delay= 0) {
-  if(!context) return
-  const time = context.currentTime + (delay / 1000)
-  
+function stopPlayerNote(pNote: PlayerNote, delay = 0) {
+  if (!context) return;
+  const time = context.currentTime + delay / 1000;
+
   pNote.gain.gain.setValueAtTime(pNote.gain.gain.value, time);
-  pNote.gain.gain.linearRampToValueAtTime(pNote.gain.gain.value * 0.1, time + 0.16);
+  pNote.gain.gain.linearRampToValueAtTime(
+    pNote.gain.gain.value * 0.1,
+    time + 0.16
+  );
   pNote.gain.gain.linearRampToValueAtTime(0.0, time + 0.4);
   pNote.source.stop(time + 0.41);
 }
@@ -135,12 +141,44 @@ function stopSustainedNotes() {
   for (const key of played) {
     key[1] = key[1].filter((k) => {
       if (k.sustained) {
-        stopPlayerNote(k)
+        stopPlayerNote(k);
       } else {
         return k;
       }
     });
   }
+}
+
+let recorder: MediaRecorder | false = false;
+let recordingstream: MediaStreamAudioDestinationNode | false = false;
+
+export function startrecording() {
+  if (!context) return;
+  recordingstream = context.createMediaStreamDestination();
+  recorder = new MediaRecorder(recordingstream.stream);
+
+  recorder.start();
+}
+
+export function stoprecording() {
+  if (!context || !recorder) return;
+  recorder.addEventListener("dataavailable", function (e) {
+    recorder = false;
+    recordingstream = false;
+
+    const url = URL.createObjectURL(e.data);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = "piano.mp4";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  });
+  recorder.stop();
 }
 
 on("note:on", (note, vel, origin) => {
