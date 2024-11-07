@@ -28,7 +28,6 @@ document
   ?.addEventListener("click", initSound, { once: true });
 
 function initSound() {
-  console.log("init");
   context = new window.AudioContext();
   loadPack("piano");
 }

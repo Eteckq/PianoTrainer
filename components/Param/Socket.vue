@@ -44,7 +44,7 @@ async function connectToSocket() {
             Room: {{ roomInfo.name }} ({{ roomInfo.users }})
           </div>
           <div class="flex gap-1 justify-center">
-            <input class="" v-model="roomName" type="text" placeholder="room" />
+            <input class="" v-model="roomName" maxlength="50" type="text" placeholder="room" />
             <div
               class="p-1 cursor-pointer bg-green-500 text-pallet-text rounded-sm px-3 hover:bg-opacity-85 inline-block"
               @click="joinRoom(roomName)"

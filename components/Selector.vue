@@ -94,7 +94,7 @@ onMounted(() => {
     <div v-if="allowGamme">
       <h2 class="mb-3 font-medium">Gammes</h2>
       <div
-        class="border p-2 overflow-y-scroll scrollbar-thin scrollbar-thumb-slate-500 h-28 md:h-72"
+        class="border p-2 overflow-y-scroll scrollbar-thin scrollbar-thumb-slate-500 h-28 md:h-60"
       >
         <div
           @click="toggleSelectedChord(chord.name)"

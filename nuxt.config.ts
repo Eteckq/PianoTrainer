@@ -8,6 +8,12 @@ export default defineNuxtConfig({
       websocket: true
     }
   },
+  // devServer: {
+  //   https: {
+  //     key: './server.key',
+  //     cert: './server.crt'
+  //   }
+  // },
   postcss: {
     plugins: {
       tailwindcss: {},

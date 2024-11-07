@@ -24,6 +24,7 @@
     "vue3-pixi-nuxt": "^0.9.3"
   },
   "devDependencies": {
+    "@types/web-bluetooth": "^0.0.20",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwind-scrollbar": "^3.1.0",

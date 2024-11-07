@@ -92,6 +92,7 @@ export default defineWebSocketHandler({
         break;
       case "room":
         const roomMessage = message as RoomMessage;
+        if(roomMessage.name.length > 50) return
         room = joinOrCreate(roomMessage.name, peer);
         break;
     }

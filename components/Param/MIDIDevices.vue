@@ -28,14 +28,10 @@ const props = defineProps({
 });
 
 function isEnabled(id: string) {
-  return props.activated.some((d) => d.device.id == id);
+  return props.activated.find((d) => d.device.id == id);
 }
 
-function getActivatedOutputDevice(id: string): OutputWithOrigins {
-  const device = props.activated.find((d) => d.device.id == id);
-  if (device && device.origins) return device;
-  return null;
-}
+
 </script>
 
 <template>
@@ -52,20 +48,20 @@ function getActivatedOutputDevice(id: string): OutputWithOrigins {
       <!-- Origins enabled -->
       <div
         class="flex gap-2"
-        v-if="isEnabled(device[1].id) && getActivatedOutputDevice(device[1].id)"
+        v-if="'origins' in isEnabled(device[1].id)"
       >
         <div
           @click="
             emits(
               'toggleOrigin',
-              getActivatedOutputDevice(device[1].id),
+              isEnabled(device[1].id),
               origin
             )
           "
           v-for="(origin, index) in NoteOrigin"
           class="border px-2 py-1 cursor-pointer"
           :class="[
-            getActivatedOutputDevice(device[1].id).origins.includes(origin)
+            isEnabled(device[1].id)?.origins.includes(origin)
               ? 'bg-green-300'
               : 'bg-red-300',
           ]"
