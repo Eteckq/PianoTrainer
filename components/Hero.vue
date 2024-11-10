@@ -160,12 +160,22 @@ function startAutoplay() {
   setNotesUnplayed();
   started = -time.value * 1000 + Date.now();
   autoplay.value = true;
+  verifyLoop();
 }
 
 function startHero() {
   setNotesUnplayed();
   started = -time.value * 1000 + Date.now();
   hero.value = true;
+  verifyLoop();
+}
+
+function verifyLoop() {
+  if (loop.value.length == 2) {
+    if (loop.value[1] - 1 < loop.value[0]) {
+      loop.value = [];
+    }
+  }
 }
 
 function setNotesUnplayed() {
@@ -285,6 +295,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   mounted = false;
+  cleanWaitingNotes();
   off("note:on", noteOn);
 });
 </script>
@@ -352,7 +363,7 @@ onUnmounted(() => {
         <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" />
         <span>Time: {{ time }} / {{ maxTime }}</span>
       </div>
-      <div class="flex gap-2">
+      <div class="flex gap-2 mt-2 items-center">
         <div
           @click="toogleLoop"
           class="bg-green-500 cursor-pointer py-1 px-4"
@@ -360,18 +371,31 @@ onUnmounted(() => {
         >
           Loop mode
         </div>
-        <input
-          v-if="loop.length > 0"
-          class="w-8 bg-pallet-primary"
-          type="number"
-          v-model="loop[0]"
-        />
-        <input
-          v-if="loop.length > 0"
-          class="w-8 bg-pallet-primary"
-          type="number"
-          v-model="loop[1]"
-        />
+        <div class="flex gap-2 " v-if="loop.length > 0">
+          <input
+            class="w-16 bg-pallet-primary text-center"
+            type="number"
+            v-model="loop[0]"
+          />
+          <div
+            @click="loop[0] = time"
+            class="cursor-pointer rounded bg-red-700 px-2"
+          >
+            S
+          </div>
+          =>
+          <input
+            class="w-16 bg-pallet-primary text-center"
+            type="number"
+            v-model="loop[1]"
+          />
+          <div
+            @click="loop[1] = time"
+            class="cursor-pointer rounded bg-red-700 px-2"
+          >
+            S
+          </div>
+        </div>
       </div>
     </div>
   </div>
