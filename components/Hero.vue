@@ -311,6 +311,10 @@ onUnmounted(() => {
       <div v-if="error">
         {{ error }}
       </div>
+      <div v-if="rects.length > 0" class="grow px-6 flex items-center flex-col mt-4 ">
+        <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" class="w-full accent-red-500"/>
+        <span>{{ time }} / {{ maxTime.toFixed(2) }}</span>
+      </div>
       <div class="flex gap-2">
         <select class="bg-pallet-primary" v-model="midiUrl">
           <option v-for="s in sounds" :value="s">{{ s }}</option>
@@ -328,6 +332,16 @@ onUnmounted(() => {
       </div>
     </div>
     <div v-if="rects.length > 0">
+      <div class="mt-4">
+        <input
+          type="range"
+          v-model="HEIGHT_FACTOR"
+          min="20"
+          max="300"
+          step="1"
+        />
+        <span>Height</span>
+      </div>
       <div v-if="!autoplay && !hero" class="flex gap-4 my-4">
         <div
           class="cursor-pointer px-2 py-1 bg-green-500 rounded-sm"
@@ -349,20 +363,7 @@ onUnmounted(() => {
       >
         Stop
       </div>
-      <div>
-        <input
-          type="range"
-          v-model="HEIGHT_FACTOR"
-          min="20"
-          max="300"
-          step="1"
-        />
-        <span>Height</span>
-      </div>
-      <div>
-        <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" />
-        <span>Time: {{ time }} / {{ maxTime }}</span>
-      </div>
+
       <div class="flex gap-2 mt-2 items-center">
         <div
           @click="toogleLoop"
@@ -371,7 +372,7 @@ onUnmounted(() => {
         >
           Loop mode
         </div>
-        <div class="flex gap-2 " v-if="loop.length > 0">
+        <div class="flex gap-2" v-if="loop.length > 0">
           <input
             class="w-16 bg-pallet-primary text-center"
             type="number"
