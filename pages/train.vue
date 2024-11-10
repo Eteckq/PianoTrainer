@@ -1,14 +1,26 @@
 <script setup lang="ts">
-import type { INoteName, IChordName, IChord, IPressedChordInfo, IGammeName } from "~/src";
+import type {
+  INoteName,
+  IChordName,
+  IChord,
+  IPressedChordInfo,
+  IGammeName,
+} from "~/src";
 import { analyze } from "~/src/ChordAnalyser";
 import { off, on, pressedKeys } from "~/src/NoteHandler";
 import { chords, type IChordInfo } from "~/src/utils";
+
+type ChordWithInversion = IChord & {
+  inversion: number;
+};
 
 const selectedNotes: Ref<INoteName[]> = ref(["C"]);
 const selectedMode: Ref<(IChordName | IGammeName)[]> = ref(["Major"]);
 
 let selectedChords: IChordInfo[] = [];
-const chordsToFound: Ref<IChord[]> = ref([]);
+const chordsToFound: Ref<ChordWithInversion[]> = ref([]);
+
+const enableReversion = ref(false);
 
 onMounted(() => {
   on("note:change", checkChord);
@@ -36,11 +48,15 @@ function stop() {
 function checkChord() {
   if (chordsToFound.value.length === 0) return;
   const analyzed = analyze(pressedKeys.map((k) => k.midi));
+
   if (
     analyzed.some(
       (ci) =>
         ci.name == chordsToFound.value[0].chord.name &&
-        ci.note == chordsToFound.value[0].note
+        ci.note == chordsToFound.value[0].note &&
+        (enableReversion.value
+          ? ci.inversion == chordsToFound.value[0].inversion
+          : true)
     )
   ) {
     chordFound();
@@ -52,10 +68,12 @@ function chordFound() {
   chordsToFound.value.push(pickChord());
 }
 
-function pickChord(): IChord {
+function pickChord(): ChordWithInversion {
+  const chord = pickInArray(selectedChords);
   return {
     note: pickInArray(selectedNotes.value),
-    chord: pickInArray(selectedChords),
+    chord: chord,
+    inversion: Math.floor(Math.random() * chord.interval.length),
   };
 }
 </script>
@@ -73,13 +91,23 @@ function pickChord(): IChord {
         "
       />
       <div
+        class="mb-4 px-4 text-center cursor-pointer rounded inline-block"
+        :class="[!enableReversion ? 'bg-red-400' : 'bg-green-400']"
+        @click="enableReversion = !enableReversion"
+      >
+        <p>Reversions</p>
+      </div>
+      <div
         class="w-full text-2xl font-bold hover:border-pallet-primary border-green-600 text-center border py-2 rounded-sm bg-green-600 cursor-pointer text-pallet-primary"
         @click="start"
       >
         Go!
       </div>
     </div>
-    <div class="grid grid-rows-2 w-full gap-12" v-if="chordsToFound.length != 0">
+    <div
+      class="grid grid-rows-2 w-full gap-12"
+      v-if="chordsToFound.length != 0"
+    >
       <div
         class="m-auto w-1/3 text-2xl font-bold hover:border-red-300 border-red-600 text-center border py-2 rounded-sm bg-red-600 cursor-pointer text-pallet-primary"
         @click="stop"
@@ -99,8 +127,11 @@ function pickChord(): IChord {
             v-for="(item, i) in chordsToFound"
             :key="item"
           >
-            <span>{{ item.note }}</span
-            ><span>{{ item.chord.notation }}</span>
+            <span>{{ item.note }}</span>
+            <span>{{ item.chord.notation }}</span>
+            <span v-if="enableReversion && item.inversion">
+              ~{{ item.inversion }}</span
+            >
           </div>
         </TransitionGroup>
       </div>

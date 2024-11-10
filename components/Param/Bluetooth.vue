@@ -38,14 +38,13 @@ async function askDevice() {
   on("note:off", (note, origin) => {
     if (origin != NoteOrigin.DEVICE) d.emit("note:off", note);
   });
-  on("sustain:on", () => {
+  on("sustain:on", (origin) => {
     if (origin != NoteOrigin.DEVICE) d.emit("sustain:on");
   });
-  on("sustain:off", () => {
+  on("sustain:off", (origin) => {
     if (origin != NoteOrigin.DEVICE) d.emit("sustain:off");
   });
-
-  devices.value.push(d)
+  devices.value.push(d);
 }
 </script>
 

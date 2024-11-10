@@ -1,8 +1,4 @@
-import type {
-  MessageType,
-  PianoMessage,
-  RoomMessage,
-} from "~/server/routes/_ws";
+import type { MessageType, RoomMessage, PianoMessage, ChatMessage } from ".";
 import {
   emitNoteOff,
   emitNoteOn,
@@ -11,10 +7,22 @@ import {
   NoteOrigin,
   on,
 } from "./NoteHandler";
+import { isChatMessage, isPianoMessage, isRoomMessage } from "./utils";
 
 export const ws: Ref<WebSocket | null> = ref(null);
 export const connected = ref(false);
-export const roomInfo = reactive({name: '', users: 0});
+export const chatMessages: Ref<{user: string, txt: string}[]> = ref([]);
+export const roomInfo = reactive({ name: "", users: 0 });
+export const pseudo = ref('')
+
+let storedPseudo = localStorage.getItem('pseudo')
+if(storedPseudo){
+  pseudo.value = storedPseudo
+}
+
+watch(pseudo, () => {
+  localStorage.setItem('pseudo', pseudo.value)
+})
 
 export const connect = async () => {
   const isSecure = location.protocol === "https:";
@@ -31,30 +39,27 @@ export const connect = async () => {
     ws.value.addEventListener("message", async (event) => {
       const message: MessageType = JSON.parse(event.data);
 
-      switch (message.type) {
-        case "piano":
-          const pianoMessage = message as PianoMessage;
-          if (pianoMessage.cmd == "note:on") {
-            if (!pianoMessage.note || !pianoMessage.vel) break;
-            emitNoteOn(pianoMessage.note, pianoMessage.vel, NoteOrigin.SOCKET);
-          }
-          if (pianoMessage.cmd == "note:off") {
-            if (!pianoMessage.note) break;
-            emitNoteOff(pianoMessage.note, NoteOrigin.SOCKET);
-          }
-          if (pianoMessage.cmd == "sustain:on") {
-            emitSustainOn(NoteOrigin.SOCKET);
-          }
-          if (pianoMessage.cmd == "sustain:off") {
-            emitSustainOff(NoteOrigin.SOCKET);
-          }
-          break;
-        case "room":
-          const roomMessage = message as RoomMessage;
-          if(!roomMessage.users) return
-          roomInfo.name = roomMessage.name
-          roomInfo.users = roomMessage.users
-          break;
+      if (isPianoMessage(message)) {
+        if (message.cmd == "note:on") {
+          if (!message.note || !message.vel) return;
+          emitNoteOn(message.note, message.vel, NoteOrigin.SOCKET);
+        }
+        if (message.cmd == "note:off") {
+          if (!message.note) return;
+          emitNoteOff(message.note, NoteOrigin.SOCKET);
+        }
+        if (message.cmd == "sustain:on") {
+          emitSustainOn(NoteOrigin.SOCKET);
+        }
+        if (message.cmd == "sustain:off") {
+          emitSustainOff(NoteOrigin.SOCKET);
+        }
+      } else if (isRoomMessage(message)) {
+        if (!message.users) return;
+        roomInfo.name = message.name;
+        roomInfo.users = message.users;
+      } else if (isChatMessage(message)) {
+        chatMessages.value.push(message)
       }
     });
 
@@ -73,10 +78,9 @@ export const connect = async () => {
   });
 };
 
-export function joinRoom(room: string){
+export function joinRoom(room: string) {
   const message: RoomMessage = {
-    type: "room",
-    name: room
+    name: room,
   };
   ws.value?.send(JSON.stringify(message));
 }
@@ -96,7 +100,6 @@ const socketGuard = (origin: NoteOrigin) => {
 on("note:on", (note, vel, origin) => {
   if (socketGuard(origin)) return;
   const message: PianoMessage = {
-    type: "piano",
     cmd: "note:on",
     note,
     vel,
@@ -108,7 +111,6 @@ on("note:on", (note, vel, origin) => {
 on("note:off", (note, origin) => {
   if (socketGuard(origin)) return;
   const message: PianoMessage = {
-    type: "piano",
     cmd: "note:off",
     note,
     origin,
@@ -119,7 +121,6 @@ on("note:off", (note, origin) => {
 on("sustain:on", (origin) => {
   if (socketGuard(origin)) return;
   const message: PianoMessage = {
-    type: "piano",
     cmd: "sustain:on",
     origin,
   };
@@ -129,9 +130,16 @@ on("sustain:on", (origin) => {
 on("sustain:off", (origin) => {
   if (socketGuard(origin)) return;
   const message: PianoMessage = {
-    type: "piano",
     cmd: "sustain:off",
     origin,
   };
   ws.value?.send(JSON.stringify(message));
 });
+
+export function sendChatMsg(txt: string){
+  const message: ChatMessage = {
+    user: pseudo.value,
+    txt
+  }
+  ws.value?.send(JSON.stringify(message));
+}

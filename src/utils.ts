@@ -1,4 +1,14 @@
-import type { IChordName, IGammeName, INote, INoteName, IRect } from ".";
+import type {
+  ChatMessage,
+  IChordName,
+  IGammeName,
+  INote,
+  INoteName,
+  IRect,
+  MessageType,
+  PianoMessage,
+  RoomMessage,
+} from ".";
 
 export type IChordInfo = {
   name: IChordName;
@@ -11,10 +21,10 @@ export type IGammeInfo = {
   notation: string;
 };
 
-export const gammes : IGammeInfo[] = [
+export const gammes: IGammeInfo[] = [
   { name: "Gamme Major", interval: [0, 2, 4, 5, 7, 9, 11], notation: "maj" },
   { name: "Gamme Minor", interval: [0, 2, 3, 5, 7, 8, 10], notation: "min" },
-]
+];
 
 export const chords: IChordInfo[] = [
   { name: "Major", interval: [0, 4, 7], notation: "maj" },
@@ -51,9 +61,6 @@ export const chords: IChordInfo[] = [
   { name: "Augmented Major 7th", interval: [0, 4, 8, 11], notation: "augM7" },
 ];
 
-
-
-
 export const notesNames: INoteName[] = [
   "C",
   "C#",
@@ -79,16 +86,16 @@ for (let i = bottomNote; i <= topNote; i++) {
     midi: i,
     black: isBlackKey(i),
     name: getNoteNameFromNumber(i),
-    octave: Math.floor(i / 12) - 1
+    octave: Math.floor(i / 12) - 1,
   });
 }
 
 export function getMidiFromNote(name: INoteName): number {
-  return notesNames.indexOf(name)
+  return notesNames.indexOf(name);
 }
 
 export function getNoteNameFromNumber(midi: number): INoteName {
-  return notesNames[midi % 12]
+  return notesNames[midi % 12];
 }
 
 export function isBlackKey(midiPitch: number) {
@@ -107,8 +114,6 @@ export function getNoteFromMidiNote(note: number) {
   return notes.find((n) => n.midi == note);
 }
 
-
-
 export function getNumWhiteKeys() {
   let numberOfNotes = topNote - bottomNote;
   let numberOfOctaves = Math.floor(numberOfNotes / 12);
@@ -125,10 +130,10 @@ export function getNumWhiteKeys() {
       numberOfWhiteKeys++;
     }
   }
-  return numberOfWhiteKeys
+  return numberOfWhiteKeys;
 }
 
-export function contains(rect: IRect, x: number, y: number){
+export function contains(rect: IRect, x: number, y: number) {
   return (
     x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h
   );
@@ -155,13 +160,16 @@ export class CanvasRecorder {
   private stream: MediaStream;
   private video: HTMLVideoElement;
 
-  constructor(private canvas: HTMLCanvasElement, private videoBitsPerSec: number = 2500000) {
+  constructor(
+    private canvas: HTMLCanvasElement,
+    private videoBitsPerSec: number = 2500000
+  ) {
     this.recordedBlobs = [];
     this.supportedType = null;
     this.mediaRecorder = null;
     this.stream = canvas.captureStream();
-    this.video = document.createElement('video');
-    this.video.style.display = 'none';
+    this.video = document.createElement("video");
+    this.video.style.display = "none";
 
     if (!this.stream) {
       throw new Error("Failed to capture canvas stream.");
@@ -176,19 +184,21 @@ export class CanvasRecorder {
 
   private handleStop(event: Event) {
     // console.log('Recorder stopped: ', event);
-    const superBuffer = new Blob(this.recordedBlobs, { type: this.supportedType || 'video/webm' });
+    const superBuffer = new Blob(this.recordedBlobs, {
+      type: this.supportedType || "video/webm",
+    });
     this.video.src = URL.createObjectURL(superBuffer);
   }
 
   public startRecording() {
     const types = [
       "video/webm",
-      'video/webm,codecs=vp9',
-      'video/vp8',
+      "video/webm,codecs=vp9",
+      "video/vp8",
       "video/webm;codecs=vp8",
       "video/webm;codecs=daala",
       "video/webm;codecs=h264",
-      "video/mpeg"
+      "video/mpeg",
     ];
 
     for (const type of types) {
@@ -205,20 +215,20 @@ export class CanvasRecorder {
 
     const options: MediaRecorderOptions = {
       mimeType: this.supportedType,
-      videoBitsPerSecond: this.videoBitsPerSec
+      videoBitsPerSecond: this.videoBitsPerSec,
     };
 
     this.recordedBlobs = [];
     try {
       this.mediaRecorder = new MediaRecorder(this.stream, options);
     } catch (e) {
-      console.error('Exception while creating MediaRecorder:', e);
-      throw new Error('MediaRecorder is not supported by this browser.');
+      console.error("Exception while creating MediaRecorder:", e);
+      throw new Error("MediaRecorder is not supported by this browser.");
     }
 
-
     this.mediaRecorder.onstop = (event) => this.handleStop(event);
-    this.mediaRecorder.ondataavailable = (event) => this.handleDataAvailable(event as BlobEvent);
+    this.mediaRecorder.ondataavailable = (event) =>
+      this.handleDataAvailable(event as BlobEvent);
     this.mediaRecorder.start(100); // collect 100ms of data blobs
   }
 
@@ -230,11 +240,13 @@ export class CanvasRecorder {
     }
   }
 
-  public download(fileName: string = 'recording.webm') {
-    const blob = new Blob(this.recordedBlobs, { type: this.supportedType || 'video/webm' });
+  public download(fileName: string = "recording.webm") {
+    const blob = new Blob(this.recordedBlobs, {
+      type: this.supportedType || "video/webm",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
+    const a = document.createElement("a");
+    a.style.display = "none";
     a.href = url;
     a.download = fileName;
     document.body.appendChild(a);
@@ -244,4 +256,28 @@ export class CanvasRecorder {
       URL.revokeObjectURL(url);
     }, 100);
   }
+}
+
+export function isRoomMessage(message: MessageType): message is RoomMessage {
+  return "name" in message && typeof message.name === "string";
+}
+
+export function isChatMessage(message: MessageType): message is ChatMessage {
+  return (
+    "txt" in message &&
+    "user" in message &&
+    typeof message.txt === "string" &&
+    typeof message.txt === "string" &&
+    message.txt.length < 50 &&
+    message.user.length < 50
+  );
+}
+
+export function isPianoMessage(message: MessageType): message is PianoMessage {
+  return (
+    "cmd" in message &&
+    "origin" in message &&
+    typeof message.cmd === "string" &&
+    typeof message.origin === "string"
+  );
 }

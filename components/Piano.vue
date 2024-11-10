@@ -1,18 +1,28 @@
 <template>
-  <div class="">
+  <div class="relative">
+    <Chat
+      v-if="connected"
+      class="absolute left-2 -top-72"
+    />
     <canvas @click="pressNote" ref="canvas"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
-import { isLoading } from "~/src/audio/engine";
 import {
   emitNoteOff,
   emitNoteOn,
   NoteOrigin,
   pressedKeys,
 } from "~/src/NoteHandler";
-import { getKeyAtPoint, initCanvas, resize } from "~/src/renders/piano";
+import {
+  getKeyAtPoint,
+  initCanvas,
+  pianoCanvas,
+  resize,
+} from "~/src/renders/piano";
+import { connected } from "~/src/socket";
+
 const canvas = ref(null);
 onMounted(() => {
   if (!canvas.value) return;

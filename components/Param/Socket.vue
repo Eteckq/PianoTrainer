@@ -4,6 +4,7 @@ import {
   connected,
   disconnect,
   joinRoom,
+  pseudo,
   roomInfo,
 } from "~/src/socket";
 const connecting = ref(false);
@@ -25,6 +26,14 @@ async function connectToSocket() {
         class="absolute ml-4 left-0 flex text-gray-400 items-center gap-4 h-12"
       >
         Connected in room {{ roomInfo.name }} 🤵 {{ roomInfo.users }}
+        <input
+          class="p-1 bg-pallet-primary rounded-sm w-28"
+          @click.stop
+          v-model="pseudo"
+          maxlength="20"
+          type="text"
+          placeholder="Pseudo"
+        />
       </div>
       <div
         v-else
@@ -43,8 +52,15 @@ async function connectToSocket() {
           >
             Room: {{ roomInfo.name }} ({{ roomInfo.users }})
           </div>
+
           <div class="flex gap-1 justify-center">
-            <input class="" v-model="roomName" maxlength="50" type="text" placeholder="room" />
+            <input
+              
+              v-model="roomName"
+              maxlength="50"
+              type="text"
+              placeholder="room"
+            />
             <div
               class="p-1 cursor-pointer bg-green-500 text-pallet-text rounded-sm px-3 hover:bg-opacity-85 inline-block"
               @click="joinRoom(roomName)"

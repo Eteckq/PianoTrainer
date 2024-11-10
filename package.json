@@ -12,6 +12,7 @@
   "dependencies": {
     "@pinia/nuxt": "^0.5.5",
     "@pixi/particle-emitter": "^5.0.8",
+    "@tonejs/midi": "^2.0.28",
     "events": "^3.3.0",
     "json-editor-vue": "^0.17.3",
     "nuxt": "^3.13.2",

@@ -112,3 +112,22 @@ export interface IKeyPosition {
   w: number;
   note: INote;
 }
+
+export type MessageType = PianoMessage | RoomMessage | ChatMessage;
+
+export interface PianoMessage {
+  cmd: keyof INoteHandlerEvents;
+  note?: number;
+  vel?: number;
+  origin: NoteOrigin;
+}
+
+export interface RoomMessage {
+  name: string;
+  users?: number;
+}
+
+export interface ChatMessage {
+  user: string,
+  txt: string;
+}

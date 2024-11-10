@@ -5,7 +5,6 @@ import { Application as Application$1 } from "@pixi/app";
 import { getKeyPositions } from "./piano";
 import { getColorFromNumber } from "../utils";
 import { Application, onTick, type GraphicsInst } from "vue3-pixi";
-import { getData, setData } from "nuxt-storage/local-storage";
 
 export interface DrawKey {
   keyPos: IKeyPosition;
@@ -21,6 +20,7 @@ const emitterKeys: Array<{ key: IKeyPosition; emitter: particles.Emitter }> =
 const container: Ref<Container | null> = ref(null);
 const rects: Ref<DrawKey[]> = ref([]);
 const tick = ref(0);
+export const visualizeReady = ref(false);
 
 function setMounted(m: boolean) {
   mounted = m;
@@ -38,13 +38,7 @@ function mountInit(
   app.resizeTo = parent;
   setBottomY(canvas.height);
   container.value = app.stage;
-
-  const particleConfig = getData("particle-config");
-  if (particleConfig) {
-    addEmitterKeys(container.value, particleConfig);
-  } else {
-    addEmitterKeys(container.value);
-  }
+  visualizeReady.value = true;
 }
 
 function initializeTicks() {
@@ -79,6 +73,18 @@ const rectangleConfig = ref({
   strength: 1,
   // tint: "#ffffffff",
 });
+
+watch(rectangleConfig, () => {
+  localStorage.setItem(
+    "rectangle-config",
+    JSON.stringify(rectangleConfig.value)
+  );
+});
+
+const rstored = localStorage.getItem("rectangle-config");
+if (rstored) {
+  rectangleConfig.value = JSON.parse(rstored);
+}
 
 function createParticleConfig(
   rect: { x: number; w: number },
@@ -249,7 +255,7 @@ function drawRectangle(graphics: GraphicsInst, rect: DrawKey) {
   } else {
     graphics.beginFill(rectangleConfig.value.color.fixed);
   }
-  graphics.drawRoundedRect(0, 0, rect.outscreen ? 0 : width, height, 5);
+  graphics.drawRoundedRect(0, 0, width, height, 5);
   graphics.x = x;
   graphics.y = y;
 }

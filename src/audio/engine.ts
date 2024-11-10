@@ -27,9 +27,12 @@ document
   .querySelector("body")
   ?.addEventListener("click", initSound, { once: true });
 
-function initSound() {
+export const soundInitied = ref(false)
+
+async function initSound() {
   context = new window.AudioContext();
-  loadPack("piano");
+  await loadPack("piano");
+  soundInitied.value = true
 }
 
 let context: AudioContext | null = null;

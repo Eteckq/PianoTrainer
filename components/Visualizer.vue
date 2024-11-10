@@ -16,6 +16,7 @@ import {
   setMounted,
   toggleEmit,
   updateParticles,
+  visualizeReady,
 } from "~/src/renders/visualizer";
 import { isRecording, record } from "~/src/renders/recorder";
 import { pianoCanvas } from "~/src/renders/piano";
@@ -23,6 +24,13 @@ import { sustain } from "~/src/audio/engine";
 
 const application: Ref<ApplicationInst | null> = ref(null);
 const topDiv: Ref<HTMLElement | null> = ref(null);
+
+function onNote(midi: number) {
+  toggleEmit(midi, true);
+}
+function offNote(midi: number) {
+  toggleEmit(midi, false);
+}
 
 onMounted(() => {
   const app = application.value?.app;
@@ -33,30 +41,33 @@ onMounted(() => {
 
   initializeTicks();
   setMounted(true);
-  on("note:on", (midi) => toggleEmit(midi, true));
-  on("note:off", (midi) => toggleEmit(midi, false));
+  on("note:on", onNote);
+  on("note:off", offNote);
 });
 
 onUnmounted(() => {
   setMounted(false);
-  off("note:on", (midi) => toggleEmit(midi, true));
-  off("note:off", (midi) => toggleEmit(midi, false));
+  off("note:on", onNote);
+  off("note:off", offNote);
 });
 </script>
 
 <template>
   <div class="h-full w-full relative overflow-hidden" ref="topDiv">
-      <div
-        class="absolute right-2 bottom-4 cursor-pointer z-10"
-        @click="
-          !sustain
-            ? emitSustainOn(NoteOrigin.MOUSE)
-            : emitSustainOff(NoteOrigin.MOUSE)
-        "
-      >
-        <div :class="{ 'opacity-40': !sustain }">🟦</div>
-      </div>
-    <div class="absolute z-10 top-0 left-0 flex gap-4 w-full px-4 mt-2">
+    <div
+      class="absolute right-2 bottom-4 cursor-pointer z-10"
+      @click="
+        !sustain
+          ? emitSustainOn(NoteOrigin.MOUSE)
+          : emitSustainOff(NoteOrigin.MOUSE)
+      "
+    >
+      <div :class="{ 'opacity-40': !sustain }">🟦</div>
+    </div>
+    <div
+      class="absolute z-10 top-0 left-0 flex gap-4 w-full px-4 mt-2"
+      v-if="visualizeReady"
+    >
       <Param>
         <template #button> ✨ </template>
         <template #title> Particles Configuration </template>

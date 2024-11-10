@@ -38,18 +38,21 @@ export class MidiBTDevice {
   private onCharacteristicValueChanged(e: any) {
     if (!this.inputActivated) return;
     const buffer = getBuffer(e.target.value);
-
+    // console.log(buffer);
+    
     if (buffer[0] >= 0x80 && buffer[0] <= 0xff) {
       if (buffer[2] == 0x80) {
         this.eventEmitter.emit("note:off", buffer[3]);
       } else if (buffer[2] == 0x90) {
         this.eventEmitter.emit("note:on", buffer[3], buffer[4]);
-      } else if (buffer[2] == 0xb0) {
+      } else if (buffer[2] == 0xb0 && buffer[3] == 0x40) {
         if (buffer[4] == 0x7f) {
           this.eventEmitter.emit("sustain:on");
         } else if (buffer[4] == 0x00) {
           this.eventEmitter.emit("sustain:off");
         }
+      }else if (buffer[2] == 0xc0) {
+        console.log('change sound', buffer[3]);
       }
     } else {
       console.log("TODO: Handle these case from BT keyboard");

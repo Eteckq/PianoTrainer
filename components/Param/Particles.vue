@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { ParticleConfigOptions } from "~/src";
-import { getData, setData } from "nuxt-storage/local-storage";
 
 const emits = defineEmits(["update"]);
 
-const config: Ref<ParticleConfigOptions> = ref({
+const particleConfig: Ref<ParticleConfigOptions> = ref({
   lifetime: { min: 2, max: 4 },
   frequency: 0.08,
   spawnChance: 1,
@@ -31,21 +30,18 @@ const config: Ref<ParticleConfigOptions> = ref({
   textures: ["Sparks.png"],
 });
 
-// if (getData("particle-config")) {
-//   config.value = getData("particle-config");
-//   if(typeof config.value == 'string'){
-//     config.value = JSON.parse(config.value)
-//   }
-  
-//   emits("update", config.value);
-// }
+const stored = localStorage.getItem('particle-config')
+if (stored) {
+  particleConfig.value = JSON.parse(stored)
+  emits("update", particleConfig.value);
+}
 
-watch(config, () => {
-  emits("update", config.value);
-  setData("particle-config", config.value);
+watch(particleConfig, () => {
+  emits("update", particleConfig.value);
+  localStorage.setItem('particle-config', JSON.stringify(particleConfig.value))
 });
 </script>
 
 <template>
-  <JsonEditorVue v-model="config" />
+  <JsonEditorVue v-model="particleConfig" />
 </template>

@@ -1,12 +1,11 @@
 import { EventEmitter } from "events";
 
 export enum NoteOrigin {
-  DEVICE='d',
-  MOUSE='m',
-  APP='a',
-  SOCKET='s',
+  DEVICE = "d",
+  MOUSE = "m",
+  APP = "a",
+  SOCKET = "s",
 }
-
 
 export interface INoteHandlerEvents {
   "note:on": (note: number, vel: number, origin: NoteOrigin) => void;
@@ -33,7 +32,6 @@ function off<K extends keyof INoteHandlerEvents>(
 ): void {
   eventEmitter.off(event, listener);
 }
-
 
 function emitNoteOn(note: number, vel: number, origin: NoteOrigin): void {
   pressKey(note, vel);
