@@ -6,17 +6,18 @@ import {
   type GraphicsInst,
 } from "vue3-pixi";
 import { Application as Application$1 } from "@pixi/app";
-import { rectangleConfig, type DrawKey } from "~/src/renders/visualizer";
+import { rectangleConfig } from "~/src/renders/visualizer";
 import { Midi } from "@tonejs/midi";
-import type { Note } from "@tonejs/midi/dist/Note";
-import { getKeyPositions } from "~/src/renders/piano";
-import type { IKeyPosition } from "~/src";
+import { getKeyPositions, setHighlightedKeys } from "~/src/renders/piano";
+import type { IKeyPosition, INote } from "~/src";
 import {
   emitNoteOff,
   emitNoteOn,
   emitSustainOff,
   emitSustainOn,
   NoteOrigin,
+  off,
+  on,
 } from "~/src/NoteHandler";
 
 const application: Ref<ApplicationInst | null> = ref(null);
@@ -30,7 +31,7 @@ const sounds = [
 
 const rects: Ref<INoteWithPosition[]> = ref([]);
 const time: Ref<number> = ref(-2);
-const midiUrl = ref("http://localhost:3000/midi/Zanarkand.mid");
+const midiUrl = ref();
 const maxTime = ref(0);
 interface INoteWithPosition {
   note: {
@@ -107,8 +108,19 @@ function drawRectangle(graphics: GraphicsInst, rect: INoteWithPosition) {
     rect.note.time * HEIGHT_FACTOR.value +
     time.value * HEIGHT_FACTOR.value;
 
-  if (y >= bottomY - height && y - 20 <= bottomY - height && autoplay.value) {
-    playNote(rect);
+  if (y >= bottomY - height && y - 20 <= bottomY - height) {
+    if (autoplay.value) {
+      playNote(rect);
+    }
+    if (
+      hero.value &&
+      !rect.note.played &&
+      !waitingNotes.some(
+        (wn) => wn.position.note.midi == rect.position.note.midi
+      )
+    ) {
+      pushWaitingNote();
+    }
   }
 
   const width = rect.position.w;
@@ -122,6 +134,7 @@ function drawRectangle(graphics: GraphicsInst, rect: INoteWithPosition) {
 }
 
 const autoplay = ref(false);
+const hero = ref(false);
 
 function mountInit(
   app: Application$1,
@@ -140,36 +153,78 @@ function startAutoplay() {
   autoplay.value = true;
 }
 
+function startHero() {
+  rects.value.forEach((r) => {
+    r.note.played = false;
+  });
+  started = -time.value * 1000 + Date.now();
+  hero.value = true;
+}
+
 function stopAutoplay() {
   autoplay.value = false;
+  hero.value = false;
+  waitingNotes.splice(0, waitingNotes.length);
+  setHighlightedKeys([]);
 }
 let mounted = false;
 let started = 0;
+const waitingNotes: INoteWithPosition[] = [];
+
+function noteOn(midi: number) {
+  const waitIndex = waitingNotes.findIndex(
+    (wn) => wn.position.note.midi == midi
+  );
+  if (waitIndex != -1) waitingNotes.splice(waitIndex, 1);
+}
+
+function pushWaitingNote() {
+  const toAdd = rects.value.filter(
+    (r) =>
+      !r.note.played &&
+      r.note.time - 0.2 < time.value &&
+      time.value - 1 < r.note.time
+  );
+  for (const ta of toAdd) {
+    ta.note.played = true;
+    waitingNotes.push(ta);
+  }
+}
+
 onMounted(() => {
   const app = application.value?.app;
   const canvas = application.value?.canvas;
   if (!app || !canvas || !topDiv.value) return;
-
+  on("note:on", noteOn);
   mountInit(app, canvas, topDiv.value);
   mounted = true;
 
   onTick((delta) => {
-    if (!mounted || !autoplay.value) return;
-
+    if (!mounted) return;
     const now = Date.now();
 
-    time.value = (now - started) / 1000;
-    for (const sustain of sustainTime) {
-      if (
-        sustain.time + 0.01 > time.value &&
-        sustain.time - 0.01 < time.value
-      ) {
-        if (sustain.value == 1) {
-          emitSustainOn(NoteOrigin.APP);
-          break;
-        } else if (sustain.value == 0) {
-          emitSustainOff(NoteOrigin.APP);
-          break;
+    if (hero.value) {
+      if (waitingNotes.length == 0) {
+        setHighlightedKeys([]);
+        time.value = (now - started) / 1000;
+      } else {
+        setHighlightedKeys(waitingNotes.map((wn) => wn.position.note.midi));
+        started = -time.value * 1000 + Date.now();
+      }
+    } else if (autoplay.value) {
+      time.value = (now - started) / 1000;
+      for (const sustain of sustainTime) {
+        if (
+          sustain.time + 0.01 > time.value &&
+          sustain.time - 0.01 < time.value
+        ) {
+          if (sustain.value == 1) {
+            emitSustainOn(NoteOrigin.APP);
+            break;
+          } else if (sustain.value == 0) {
+            emitSustainOff(NoteOrigin.APP);
+            break;
+          }
         }
       }
     }
@@ -178,6 +233,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   mounted = false;
+  off("note:on", noteOn);
 });
 </script>
 
@@ -189,7 +245,11 @@ onUnmounted(() => {
       </select>
       <div @click="loadMidi(midiUrl)">LOAD</div>
     </div>
-    <div v-if="!autoplay" @click="startAutoplay">PLAY</div>
+<div v-if="rects.length > 0">
+  <div v-if="!autoplay && !hero">
+      <div @click="startAutoplay">PLAY</div>
+      <div @click="startHero">PLAY HERO</div>
+    </div>
     <div v-else @click="stopAutoplay">STOP</div>
     <div>
       <input type="range" v-model="HEIGHT_FACTOR" min="20" max="300" step="1" />
@@ -199,6 +259,7 @@ onUnmounted(() => {
       <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" />
       <span>time: {{ time }} / {{ maxTime }}</span>
     </div>
+</div>
   </div>
   <div class="h-full w-full relative overflow-hidden" ref="topDiv">
     <Application ref="application" class="absolute bottom-0">
