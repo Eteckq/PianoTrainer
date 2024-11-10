@@ -23,6 +23,7 @@ import {
 const application: Ref<ApplicationInst | null> = ref(null);
 const topDiv: Ref<HTMLElement | null> = ref(null);
 let bottomY = 0;
+const loop: Ref<number[]> = ref([]);
 
 const sounds = [
   "/midi/Ori and the Will of the Wisps.mid",
@@ -47,47 +48,56 @@ const sustainTime: {
   time: number;
   value: number;
 }[] = [];
+const error = ref("");
 
 // loadMidi("http://localhost:3000/midi/Zanarkand.mid");
 
 async function loadMidi(url: string) {
-  const midi = await Midi.fromUrl(url);
+  error.value = "";
+  loading.value = true;
+  let midi: Midi | null = null;
+  try {
+    midi = await Midi.fromUrl(url);
+  } catch (e) {
+    loading.value = false;
+    error.value = String(e);
+    return;
+  }
   rects.value.splice(0, rects.value.length);
+  sustainTime.splice(0, sustainTime.length - 1);
   time.value = -2;
   await new Promise((r) => setTimeout(r, 5));
   const keyPositions = getKeyPositions();
 
-  midi.tracks.forEach((track) => {
-    //tracks have notes and controlChanges
+  const track = midi.tracks[0];
+  if (!track) {
+    loading.value = false;
+    error.value = "No track found";
+    return;
+  }
 
-    //notes are an array
-    const notes = track.notes;
-    notes.forEach((note) => {
-      const position = keyPositions.find((kp) => kp.note.midi == note.midi);
-      if (!position) return;
-      rects.value.push({
-        note: {
-          duration: note.duration,
-          time: note.time,
-          velocity: note.velocity,
-          played: false,
-        },
-        position,
-      });
-      //note.midi, note.time, note.duration, note.name
-      maxTime.value = note.time + note.duration;
+  for (const note of track.notes) {
+    const position = keyPositions.find((kp) => kp.note.midi == note.midi);
+    if (!position) return;
+    rects.value.push({
+      note: {
+        duration: note.duration,
+        time: note.time,
+        velocity: note.velocity,
+        played: false,
+      },
+      position,
     });
+    maxTime.value = note.time + note.duration;
+  }
 
-    sustainTime.splice(0, sustainTime.length - 1);
-    //they are also aliased to the CC number's common name (if it has one)
-    if (track.controlChanges.sustain)
-      track.controlChanges.sustain.forEach((cc) => {
-        // cc.ticks, cc.value, cc.time
-        if (cc.name == "sustain") {
-          sustainTime.push({ time: cc.time, value: cc.value });
-        }
-      });
-  });
+  if (track.controlChanges.sustain)
+    track.controlChanges.sustain.forEach((cc) => {
+      if (cc.name == "sustain") {
+        sustainTime.push({ time: cc.time, value: cc.value });
+      }
+    });
+  loading.value = false;
 }
 
 function playNote(note: INoteWithPosition) {
@@ -135,6 +145,7 @@ function drawRectangle(graphics: GraphicsInst, rect: INoteWithPosition) {
 
 const autoplay = ref(false);
 const hero = ref(false);
+const loading = ref(false);
 
 function mountInit(
   app: Application$1,
@@ -146,26 +157,38 @@ function mountInit(
 }
 
 function startAutoplay() {
-  rects.value.forEach((r) => {
-    r.note.played = false;
-  });
+  setNotesUnplayed();
   started = -time.value * 1000 + Date.now();
   autoplay.value = true;
 }
 
 function startHero() {
+  setNotesUnplayed();
+  started = -time.value * 1000 + Date.now();
+  hero.value = true;
+}
+
+function setNotesUnplayed() {
   rects.value.forEach((r) => {
     r.note.played = false;
   });
-  started = -time.value * 1000 + Date.now();
-  hero.value = true;
+}
+
+function toogleLoop() {
+  if (loop.value.length == 0) {
+    loop.value.push(8, 10);
+  } else [loop.value.splice(0, loop.value.length)];
+}
+
+function cleanWaitingNotes() {
+  waitingNotes.splice(0, waitingNotes.length);
+  setHighlightedKeys([]);
 }
 
 function stopAutoplay() {
   autoplay.value = false;
   hero.value = false;
-  waitingNotes.splice(0, waitingNotes.length);
-  setHighlightedKeys([]);
+  cleanWaitingNotes();
 }
 let mounted = false;
 let started = 0;
@@ -191,6 +214,14 @@ function pushWaitingNote() {
   }
 }
 
+function loadLocalMidi(e: Event) {
+  const t = e.target as HTMLInputElement;
+  if (t.files) {
+    var tmppath = URL.createObjectURL(t.files[0]);
+    loadMidi(tmppath);
+  }
+}
+
 onMounted(() => {
   const app = application.value?.app;
   const canvas = application.value?.canvas;
@@ -202,6 +233,27 @@ onMounted(() => {
   onTick((delta) => {
     if (!mounted) return;
     const now = Date.now();
+
+    if ((hero.value || autoplay.value) && loop.value.length === 2) {
+      const [loopStart, loopEnd] = loop.value;
+      if (time.value > loopEnd || time.value < loopStart) {
+        const wasAutoplay = autoplay.value;
+        const wasHero = hero.value;
+
+        stopAutoplay();
+        time.value = loopStart;
+
+        setTimeout(() => {
+          if (wasAutoplay) {
+            startAutoplay();
+          } else if (wasHero) {
+            startHero();
+          }
+        }, 500);
+
+        return;
+      }
+    }
 
     if (hero.value) {
       if (waitingNotes.length == 0) {
@@ -238,28 +290,90 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="absolute z-50">
-    <div class="flex gap-4">
-      <select class="bg-pallet-primary" v-model="midiUrl">
-        <option v-for="s in sounds" :value="s">{{ s }}</option>
-      </select>
-      <div @click="loadMidi(midiUrl)">LOAD</div>
+  <div class="absolute z-50 w-full px-4">
+    <div class="flex justify-between items-center">
+      <input
+        class="cursor-pointer px-4 py-2 bg-pallet-secondary rounded"
+        type="file"
+        @change="loadLocalMidi"
+      />
+      <div v-if="error">
+        {{ error }}
+      </div>
+      <div class="flex gap-2">
+        <select class="bg-pallet-primary" v-model="midiUrl">
+          <option v-for="s in sounds" :value="s">{{ s }}</option>
+        </select>
+        <div
+          v-if="!loading"
+          class="cursor-pointer px-4 py-2 bg-pallet-primary rounded"
+          @click="loadMidi(midiUrl)"
+        >
+          Load
+        </div>
+        <div v-else class="px-4 py-2 bg-pallet-secondary rounded">
+          Loading..
+        </div>
+      </div>
     </div>
-<div v-if="rects.length > 0">
-  <div v-if="!autoplay && !hero">
-      <div @click="startAutoplay">PLAY</div>
-      <div @click="startHero">PLAY HERO</div>
+    <div v-if="rects.length > 0">
+      <div v-if="!autoplay && !hero" class="flex gap-4 my-4">
+        <div
+          class="cursor-pointer px-2 py-1 bg-green-500 rounded-sm"
+          @click="startAutoplay"
+        >
+          Play
+        </div>
+        <div
+          class="cursor-pointer px-2 py-1 bg-green-500 rounded-sm"
+          @click="startHero"
+        >
+          Play (Hero mode)
+        </div>
+      </div>
+      <div
+        class="cursor-pointer px-12 py-1 bg-red-500 rounded-sm inline-block my-4"
+        v-else
+        @click="stopAutoplay"
+      >
+        Stop
+      </div>
+      <div>
+        <input
+          type="range"
+          v-model="HEIGHT_FACTOR"
+          min="20"
+          max="300"
+          step="1"
+        />
+        <span>Height</span>
+      </div>
+      <div>
+        <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" />
+        <span>Time: {{ time }} / {{ maxTime }}</span>
+      </div>
+      <div class="flex gap-2">
+        <div
+          @click="toogleLoop"
+          class="bg-green-500 cursor-pointer py-1 px-4"
+          :class="{ 'bg-orange-500': loop.length > 0 }"
+        >
+          Loop mode
+        </div>
+        <input
+          v-if="loop.length > 0"
+          class="w-8 bg-pallet-primary"
+          type="number"
+          v-model="loop[0]"
+        />
+        <input
+          v-if="loop.length > 0"
+          class="w-8 bg-pallet-primary"
+          type="number"
+          v-model="loop[1]"
+        />
+      </div>
     </div>
-    <div v-else @click="stopAutoplay">STOP</div>
-    <div>
-      <input type="range" v-model="HEIGHT_FACTOR" min="20" max="300" step="1" />
-      <span>height</span>
-    </div>
-    <div>
-      <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" />
-      <span>time: {{ time }} / {{ maxTime }}</span>
-    </div>
-</div>
   </div>
   <div class="h-full w-full relative overflow-hidden" ref="topDiv">
     <Application ref="application" class="absolute bottom-0">

@@ -11,18 +11,18 @@ import { isChatMessage, isPianoMessage, isRoomMessage } from "./utils";
 
 export const ws: Ref<WebSocket | null> = ref(null);
 export const connected = ref(false);
-export const chatMessages: Ref<{user: string, txt: string}[]> = ref([]);
+export const chatMessages: Ref<{ user: string; txt: string }[]> = ref([]);
 export const roomInfo = reactive({ name: "", users: 0 });
-export const pseudo = ref('')
+export const pseudo = ref("");
 
-let storedPseudo = localStorage.getItem('pseudo')
-if(storedPseudo){
-  pseudo.value = storedPseudo
+let storedPseudo = localStorage.getItem("pseudo");
+if (storedPseudo) {
+  pseudo.value = storedPseudo;
 }
 
 watch(pseudo, () => {
-  localStorage.setItem('pseudo', pseudo.value)
-})
+  localStorage.setItem("pseudo", pseudo.value);
+});
 
 export const connect = async () => {
   const isSecure = location.protocol === "https:";
@@ -59,7 +59,7 @@ export const connect = async () => {
         roomInfo.name = message.name;
         roomInfo.users = message.users;
       } else if (isChatMessage(message)) {
-        chatMessages.value.push(message)
+        chatMessages.value.push(message);
       }
     });
 
@@ -94,7 +94,12 @@ export function disconnect() {
 }
 
 const socketGuard = (origin: NoteOrigin) => {
-  return origin == NoteOrigin.SOCKET || !ws.value || !connected.value;
+  return (
+    origin == NoteOrigin.SOCKET ||
+    origin == NoteOrigin.APP ||
+    !ws.value ||
+    !connected.value
+  );
 };
 
 on("note:on", (note, vel, origin) => {
@@ -136,10 +141,10 @@ on("sustain:off", (origin) => {
   ws.value?.send(JSON.stringify(message));
 });
 
-export function sendChatMsg(txt: string){
+export function sendChatMsg(txt: string) {
   const message: ChatMessage = {
     user: pseudo.value,
-    txt
-  }
+    txt,
+  };
   ws.value?.send(JSON.stringify(message));
 }
