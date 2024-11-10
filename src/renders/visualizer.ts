@@ -47,8 +47,8 @@ function initializeTicks() {
     if (!mounted) return;
 
     const now = Date.now();
-    emitterKeys.forEach((emitter) =>
-      emitter.emitter.update((now - elapsed) * 0.001)
+    emitterKeys.forEach((emitter) =>{
+      emitter.emitter.update((now - elapsed) * 0.001)}
     );
 
     tick.value++;
@@ -168,11 +168,13 @@ function createParticleConfig(
 
 function toggleEmit(midi: number, emit: boolean) {
   const emitterKey = emitterKeys.find((e) => e.key.note.midi === midi);
+  
   if (!emitterKey) return;
 
   const rect = rects.value.find(
     (r) => r.keyPos.note.midi === midi && !r.finished
   );
+  
   if (emit && !rect) {
     rects.value.push({
       keyPos: emitterKey.key,
@@ -201,7 +203,7 @@ function addEmitterKeys(
     }
     emitterKeys.splice(0, emitterKeys.length);
   }
-
+  
   for (const key of getKeyPositions()) {
     const emitter = new particles.Emitter(
       container,

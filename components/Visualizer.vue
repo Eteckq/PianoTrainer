@@ -47,6 +47,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   setMounted(false);
+  visualizeReady.value = false
   off("note:on", onNote);
   off("note:off", offNote);
 });

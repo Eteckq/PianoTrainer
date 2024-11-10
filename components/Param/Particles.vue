@@ -33,13 +33,16 @@ const particleConfig: Ref<ParticleConfigOptions> = ref({
 const stored = localStorage.getItem('particle-config')
 if (stored) {
   particleConfig.value = JSON.parse(stored)
-  emits("update", particleConfig.value);
 }
 
 watch(particleConfig, () => {
   emits("update", particleConfig.value);
   localStorage.setItem('particle-config', JSON.stringify(particleConfig.value))
 });
+
+onMounted(()=>{
+  emits("update", particleConfig.value);
+})
 </script>
 
 <template>
