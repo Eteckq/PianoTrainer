@@ -23,6 +23,11 @@ const application: Ref<ApplicationInst | null> = ref(null);
 const topDiv: Ref<HTMLElement | null> = ref(null);
 let bottomY = 0;
 
+const sounds = [
+  "/midi/Ori and the Will of the Wisps.mid",
+  "/midi/Zanarkand.mid",
+];
+
 const rects: Ref<INoteWithPosition[]> = ref([]);
 const time: Ref<number> = ref(-2);
 const midiUrl = ref("http://localhost:3000/midi/Zanarkand.mid");
@@ -47,8 +52,8 @@ const sustainTime: {
 async function loadMidi(url: string) {
   const midi = await Midi.fromUrl(url);
   rects.value.splice(0, rects.value.length);
-  time.value = -2
-  await new Promise(r => setTimeout(r, 5))
+  time.value = -2;
+  await new Promise((r) => setTimeout(r, 5));
   const keyPositions = getKeyPositions();
 
   midi.tracks.forEach((track) => {
@@ -102,7 +107,7 @@ function drawRectangle(graphics: GraphicsInst, rect: INoteWithPosition) {
     rect.note.time * HEIGHT_FACTOR.value +
     time.value * HEIGHT_FACTOR.value;
 
-  if (y >= bottomY - height && y - 20 <= bottomY - height) {
+  if (y >= bottomY - height && y - 20 <= bottomY - height && autoplay.value) {
     playNote(rect);
   }
 
@@ -178,18 +183,22 @@ onUnmounted(() => {
 
 <template>
   <div class="absolute z-50">
-    <input
-      class="bg-pallet-primary"
-      type="text"
-      placeholder="Midi URL"
-      v-model="midiUrl"
-      @change="loadMidi(midiUrl)"
-    />
+    <div class="flex gap-4">
+      <select class="bg-pallet-primary" v-model="midiUrl">
+        <option v-for="s in sounds" :value="s">{{ s }}</option>
+      </select>
+      <div @click="loadMidi(midiUrl)">LOAD</div>
+    </div>
     <div v-if="!autoplay" @click="startAutoplay">PLAY</div>
     <div v-else @click="stopAutoplay">STOP</div>
-    <input type="range" v-model="HEIGHT_FACTOR" min="20" max="300" step="1" />
-    <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" />
-    {{ time }} / {{ maxTime }}
+    <div>
+      <input type="range" v-model="HEIGHT_FACTOR" min="20" max="300" step="1" />
+      <span>height</span>
+    </div>
+    <div>
+      <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" />
+      <span>time: {{ time }} / {{ maxTime }}</span>
+    </div>
   </div>
   <div class="h-full w-full relative overflow-hidden" ref="topDiv">
     <Application ref="application" class="absolute bottom-0">
