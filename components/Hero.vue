@@ -31,9 +31,10 @@ const sounds = [
 ];
 
 const rects: Ref<INoteWithPosition[]> = ref([]);
-const time: Ref<number> = ref(-2);
+const time: Ref<number> = ref(-1);
 const midiUrl = ref();
 const maxTime = ref(0);
+const speed = ref(1);
 interface INoteWithPosition {
   note: {
     duration: number;
@@ -158,14 +159,14 @@ function mountInit(
 
 function startAutoplay() {
   setNotesUnplayed();
-  started = -time.value * 1000 + Date.now();
+  started = (-time.value / speed.value) * 1000 + Date.now();
   autoplay.value = true;
   verifyLoop();
 }
 
 function startHero() {
   setNotesUnplayed();
-  started = -time.value * 1000 + Date.now();
+  started = (-time.value / speed.value) * 1000 + Date.now();
   hero.value = true;
   verifyLoop();
 }
@@ -215,7 +216,7 @@ function pushWaitingNote() {
   const toAdd = rects.value.filter(
     (r) =>
       !r.note.played &&
-      r.note.time - 0.2 < time.value &&
+      r.note.time - 0.2  < time.value &&
       time.value - 1 < r.note.time
   );
   for (const ta of toAdd) {
@@ -268,13 +269,14 @@ onMounted(() => {
     if (hero.value) {
       if (waitingNotes.length == 0) {
         setHighlightedKeys([]);
-        time.value = (now - started) / 1000;
+        time.value = ((now - started) / 1000) * speed.value;
       } else {
         setHighlightedKeys(waitingNotes.map((wn) => wn.position.note.midi));
-        started = -time.value * 1000 + Date.now();
+        started = (-time.value / speed.value) * 1000 + Date.now();
       }
     } else if (autoplay.value) {
-      time.value = (now - started) / 1000;
+      time.value = ((now - started) / 1000) * speed.value;
+
       for (const sustain of sustainTime) {
         if (
           sustain.time + 0.01 > time.value &&
@@ -311,9 +313,19 @@ onUnmounted(() => {
       <div v-if="error">
         {{ error }}
       </div>
-      <div v-if="rects.length > 0" class="grow px-6 flex items-center flex-col mt-4 ">
-        <input type="range" v-model="time" min="-2" :max="maxTime" step="0.2" class="w-full accent-red-500"/>
-        <span>{{ time }} / {{ maxTime.toFixed(2) }}</span>
+      <div
+        v-if="rects.length > 0"
+        class="grow px-6 flex items-center flex-col mt-4"
+      >
+        <input
+          type="range"
+          v-model="time"
+          min="-2"
+          :max="maxTime"
+          step="0.2"
+          class="w-full accent-red-500"
+        />
+        <span>{{ (+time).toFixed(2) }} / {{ maxTime.toFixed(2) }}</span>
       </div>
       <div class="flex gap-2">
         <select class="bg-pallet-primary" v-model="midiUrl">
@@ -341,6 +353,10 @@ onUnmounted(() => {
           step="1"
         />
         <span>Height</span>
+      </div>
+      <div class="mt-4">
+        <input type="range" v-model="speed" min="0.20" max="4" step="0.1" />
+        <span>Speed x{{ speed }}</span>
       </div>
       <div v-if="!autoplay && !hero" class="flex gap-4 my-4">
         <div
@@ -379,7 +395,12 @@ onUnmounted(() => {
             v-model="loop[0]"
           />
           <div
-            @click="loop[0] = time"
+            @click="
+              () => {
+                loop[0] = time;
+                if (+loop[1] < +loop[0]) loop[1] = +loop[0];
+              }
+            "
             class="cursor-pointer rounded bg-red-700 px-2"
           >
             S

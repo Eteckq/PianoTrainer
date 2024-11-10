@@ -80,7 +80,7 @@ function pickChord(): ChordWithInversion {
 
 <template>
   <div class="flex flex-col items-center justify-center h-full">
-    <div v-show="chordsToFound.length == 0">
+    <div v-show="chordsToFound.length == 0" class="flex flex-col items-center justify-center gap-4">
       <Selector
         :multiple="true"
         @select="
@@ -91,14 +91,17 @@ function pickChord(): ChordWithInversion {
         "
       />
       <div
-        class="mb-4 px-4 text-center cursor-pointer rounded inline-block"
-        :class="[!enableReversion ? 'bg-red-400' : 'bg-green-400']"
+        class="mb-4 px-4 text-center cursor-pointer rounded inline-block mx-auto"
+        :class="[!enableReversion ? 'bg-gray-400' : 'bg-green-400']"
         @click="enableReversion = !enableReversion"
       >
-        <p>Reversions</p>
+        <p>
+          <span v-if="!enableReversion">Enable</span>
+          <span v-else>Disable</span> inversions
+        </p>
       </div>
       <div
-        class="w-full text-2xl font-bold hover:border-pallet-primary border-green-600 text-center border py-2 rounded-sm bg-green-600 cursor-pointer text-pallet-primary"
+        class="w-full text-2xl font-bold hover:border-pallet-primary border-green-600 text-center border py-2 rounded-sm bg-green-600 cursor-pointer text-pallet-text"
         @click="start"
       >
         Go!
@@ -109,7 +112,7 @@ function pickChord(): ChordWithInversion {
       v-if="chordsToFound.length != 0"
     >
       <div
-        class="m-auto w-1/3 text-2xl font-bold hover:border-red-300 border-red-600 text-center border py-2 rounded-sm bg-red-600 cursor-pointer text-pallet-primary"
+        class="m-auto text-pallet-text w-1/3 text-2xl font-bold hover:border-red-300 border-red-600 text-center border py-2 rounded-sm bg-red-600 cursor-pointer "
         @click="stop"
       >
         Stop
