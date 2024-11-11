@@ -56,7 +56,16 @@ onUnmounted(() => {
 <template>
   <div class="h-full w-full relative overflow-hidden" ref="topDiv">
     <div class="absolute right-2 bottom-4 z-10 flex items-center gap-2">
-      <input type="range" class="accent-gray-200" v-model="volume" max="1" min="0" step="0.05" />
+<div class="w-24">
+  <input
+          type="range"
+          class="volume"
+          v-model="volume"
+          max="1"
+          min="0"
+          step="0.05"
+        />
+</div>
       <div
         class="cursor-pointer inline-block"
         @click="
@@ -114,3 +123,13 @@ onUnmounted(() => {
     </Application>
   </div>
 </template>
+
+<style scoped>
+.volume {
+  background: url("/volume.png") no-repeat;
+  width: 100%;
+  height: 100%;
+  background-position: 50% 50%;
+  -webkit-appearance: none;
+}
+</style>
