@@ -51,8 +51,6 @@ const sustainTime: {
 }[] = [];
 const error = ref("");
 
-// loadMidi("http://localhost:3000/midi/Zanarkand.mid");
-
 async function loadMidi(url: string) {
   error.value = "";
   loading.value = true;
@@ -216,7 +214,7 @@ function pushWaitingNote() {
   const toAdd = rects.value.filter(
     (r) =>
       !r.note.played &&
-      r.note.time - 0.2  < time.value &&
+      r.note.time - 0.2 < time.value &&
       time.value - 1 < r.note.time
   );
   for (const ta of toAdd) {

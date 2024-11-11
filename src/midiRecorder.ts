@@ -13,8 +13,8 @@ on("note:on", (note, velocity, origin) => {
 
   noteHolder.push({
     midi: note,
-    time: (Date.now() - MidiRecorder.recording)/1000,
-    velocity: velocity/127,
+    time: getTime(),
+    velocity: velocity / 127,
   });
 });
 
@@ -25,7 +25,7 @@ on("note:off", (note, origin) => {
 
   MidiRecorder.track.addNote({
     ...noteHolder[iNote],
-    duration: (Date.now() - MidiRecorder.recording)/1000 - noteHolder[iNote].time,
+    duration: getTime() - noteHolder[iNote].time,
   });
 
   noteHolder = noteHolder.filter((n) => n.midi != note);
@@ -36,8 +36,8 @@ on("sustain:on", (origin) => {
 
   MidiRecorder.track.addCC({
     number: 64,
-    value: 127,
-    time: (Date.now() - MidiRecorder.recording)/1000,
+    value: 1,
+    time: getTime(),
   });
 });
 
@@ -47,7 +47,7 @@ on("sustain:off", (origin) => {
   MidiRecorder.track.addCC({
     number: 64,
     value: 0,
-    time: (Date.now() - MidiRecorder.recording)/1000,
+    time: getTime(),
   });
 });
 export class MidiRecorder implements IRecorder {
@@ -66,8 +66,10 @@ export class MidiRecorder implements IRecorder {
   }
   download(filename = "midi.mid"): void {
     if (!this.midi) return;
-    
-    const blob = new Blob([this.midi.toArray()], { type: 'application/octet-stream' });
+
+    const blob = new Blob([this.midi.toArray()], {
+      type: "application/octet-stream",
+    });
 
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -81,4 +83,8 @@ export class MidiRecorder implements IRecorder {
       URL.revokeObjectURL(url);
     }, 100);
   }
+}
+function getTime(): number {
+  if (!MidiRecorder.recording) return 0;
+  return (Date.now() - MidiRecorder.recording) / 1000;
 }
