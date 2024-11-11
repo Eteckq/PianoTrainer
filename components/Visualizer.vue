@@ -20,7 +20,7 @@ import {
 } from "~/src/renders/visualizer";
 import { isRecording, record } from "~/src/renders/recorder";
 import { pianoCanvas } from "~/src/renders/piano";
-import { sustain } from "~/src/audio/engine";
+import { sustain, volume } from "~/src/audio/engine";
 
 const application: Ref<ApplicationInst | null> = ref(null);
 const topDiv: Ref<HTMLElement | null> = ref(null);
@@ -47,7 +47,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   setMounted(false);
-  visualizeReady.value = false
+  visualizeReady.value = false;
   off("note:on", onNote);
   off("note:off", offNote);
 });
@@ -55,16 +55,21 @@ onUnmounted(() => {
 
 <template>
   <div class="h-full w-full relative overflow-hidden" ref="topDiv">
-    <div
-      class="absolute right-2 bottom-4 cursor-pointer z-10"
-      @click="
-        !sustain
-          ? emitSustainOn(NoteOrigin.MOUSE)
-          : emitSustainOff(NoteOrigin.MOUSE)
-      "
-    >
-      <div :class="{ 'opacity-40': !sustain }">🟦</div>
+    <div class="absolute right-2 bottom-4 z-10 flex items-center gap-2">
+      <input type="range" class="accent-gray-200" v-model="volume" max="1" min="0" step="0.05" />
+      <div
+        class="cursor-pointer inline-block"
+        @click="
+          !sustain
+            ? emitSustainOn(NoteOrigin.MOUSE)
+            : emitSustainOff(NoteOrigin.MOUSE)
+        "
+        :class="{ 'opacity-40': !sustain }"
+      >
+        🟦
+      </div>
     </div>
+
     <div
       class="absolute z-10 top-0 left-0 flex gap-4 w-full px-4 mt-2"
       v-if="visualizeReady"

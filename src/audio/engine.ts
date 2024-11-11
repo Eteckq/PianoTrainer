@@ -28,6 +28,7 @@ document
   ?.addEventListener("click", initSound, { once: true });
 
 export const soundInitied = ref(false)
+export const volume = ref(1)
 
 async function initSound() {
   context = new window.AudioContext();
@@ -94,7 +95,7 @@ export function playNote(midi: number, vel: number) {
 
   source.buffer = audioNote;
   const gain = context.createGain();
-  gain.gain.value = vel / 127;
+  gain.gain.value = vel / 127 * +volume.value;
   gain.connect(context.destination);
   source.connect(gain);
   if (recordingstream) {
