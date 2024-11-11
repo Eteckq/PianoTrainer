@@ -18,10 +18,8 @@ import {
   updateParticles,
   visualizeReady,
 } from "~/src/renders/visualizer";
-import { isRecording, record } from "~/src/renders/recorder";
 import { pianoCanvas } from "~/src/renders/piano";
 import { sustain, volume } from "~/src/audio/engine";
-
 const application: Ref<ApplicationInst | null> = ref(null);
 const topDiv: Ref<HTMLElement | null> = ref(null);
 
@@ -56,8 +54,8 @@ onUnmounted(() => {
 <template>
   <div class="h-full w-full relative overflow-hidden" ref="topDiv">
     <div class="absolute right-2 bottom-4 z-10 flex items-center gap-2">
-<div class="w-24">
-  <input
+      <div class="w-24">
+        <input
           type="range"
           class="volume"
           v-model="volume"
@@ -65,7 +63,7 @@ onUnmounted(() => {
           min="0"
           step="0.05"
         />
-</div>
+      </div>
       <div
         class="cursor-pointer inline-block"
         @click="
@@ -99,14 +97,7 @@ onUnmounted(() => {
         </template>
       </Param>
 
-      <div
-        v-if="application?.canvas && pianoCanvas"
-        @click="record(application.canvas, pianoCanvas)"
-        class="cursor-pointer ml-auto"
-      >
-        <span v-if="isRecording">🔴</span>
-        <span v-else>🟢</span>
-      </div>
+      <Recorder v-if="application?.canvas && pianoCanvas" />
     </div>
     <Application
       :background-alpha="rectangleConfig.bg.alpha"

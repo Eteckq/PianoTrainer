@@ -20,6 +20,7 @@ const emitterKeys: Array<{ key: IKeyPosition; emitter: particles.Emitter }> =
 const container: Ref<Container | null> = ref(null);
 const rects: Ref<DrawKey[]> = ref([]);
 const tick = ref(0);
+export let visualizerCanvas: HTMLCanvasElement | null = null
 export const visualizeReady = ref(false);
 
 function setMounted(m: boolean) {
@@ -39,6 +40,8 @@ function mountInit(
   setBottomY(canvas.height);
   container.value = app.stage;
   visualizeReady.value = true;
+
+  visualizerCanvas = canvas
 }
 
 function initializeTicks() {

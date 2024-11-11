@@ -1,5 +1,5 @@
 import { on } from "../NoteHandler";
-import { notes } from "../utils";
+import { IRecorder, notes } from "../utils";
 
 // export class AudioEngine {
 //   volume: number;
@@ -27,13 +27,13 @@ document
   .querySelector("body")
   ?.addEventListener("click", initSound, { once: true });
 
-export const soundInitied = ref(false)
-export const volume = ref(1)
+export const soundInitied = ref(false);
+export const volume = ref(1);
 
 async function initSound() {
   context = new window.AudioContext();
   await loadPack("piano");
-  soundInitied.value = true
+  soundInitied.value = true;
 }
 
 let context: AudioContext | null = null;
@@ -95,11 +95,11 @@ export function playNote(midi: number, vel: number) {
 
   source.buffer = audioNote;
   const gain = context.createGain();
-  gain.gain.value = vel / 127 * +volume.value;
+  gain.gain.value = (vel / 127) * +volume.value;
   gain.connect(context.destination);
   source.connect(gain);
-  if (recordingstream) {
-    source.connect(recordingstream);
+  if (AudioRecorder.recordingstream) {
+    source.connect(AudioRecorder.recordingstream);
   }
   source.start();
 
@@ -153,36 +153,42 @@ function stopSustainedNotes() {
   }
 }
 
-let recorder: MediaRecorder | false = false;
-let recordingstream: MediaStreamAudioDestinationNode | false = false;
+export class AudioRecorder implements IRecorder {
+  recorder: MediaRecorder | false = false;
+  static recordingstream: MediaStreamAudioDestinationNode | false = false;
 
-export function startrecording() {
-  if (!context) return;
-  recordingstream = context.createMediaStreamDestination();
-  recorder = new MediaRecorder(recordingstream.stream);
+  outUrl = "";
 
-  recorder.start();
-}
+  startRecording(): void {
+    if (!context) return;
 
-export function stoprecording() {
-  if (!context || !recorder) return;
-  recorder.addEventListener("dataavailable", function (e) {
-    recorder = false;
-    recordingstream = false;
-
-    const url = URL.createObjectURL(e.data);
+    AudioRecorder.recordingstream = context.createMediaStreamDestination();
+    this.recorder = new MediaRecorder(AudioRecorder.recordingstream.stream);
+    this.recorder.start();
+  }
+  stopRecording(): void {
+    if (!context || !this.recorder) return;
+    const self = this;
+    this.recorder.addEventListener("dataavailable", function (e) {
+      self.recorder = false;
+      AudioRecorder.recordingstream = false;
+      self.outUrl = URL.createObjectURL(e.data);
+      self.download();
+    });
+    this.recorder.stop();
+  }
+  download(filename = "piano.mp4"): void {
     const a = document.createElement("a");
     a.style.display = "none";
-    a.href = url;
-    a.download = "piano.mp4";
+    a.href = this.outUrl;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(this.outUrl);
     }, 100);
-  });
-  recorder.stop();
+  }
 }
 
 on("note:on", (note, vel, origin) => {

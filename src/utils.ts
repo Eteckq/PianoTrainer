@@ -1,3 +1,4 @@
+
 import type {
   ChatMessage,
   IChordName,
@@ -9,6 +10,7 @@ import type {
   PianoMessage,
   RoomMessage,
 } from ".";
+import { on } from "./NoteHandler";
 
 export type IChordInfo = {
   name: IChordName;
@@ -153,7 +155,13 @@ export function getColorFromNumber(value: number): string {
   return `#${redHex}${greenHex}${blueHex}`;
 }
 
-export class CanvasRecorder {
+export abstract class IRecorder {
+  abstract startRecording(): void;
+  abstract stopRecording(): void;
+  abstract download(filename?: string): void;
+}
+
+export class CanvasRecorder implements IRecorder {
   private recordedBlobs: Blob[];
   private supportedType: string | null;
   private mediaRecorder: MediaRecorder | null;
