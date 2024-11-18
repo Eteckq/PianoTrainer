@@ -73,6 +73,9 @@ function enableInput(device: MIDIInput): void {
       emitNoteOff(noteNumber, NoteOrigin.DEVICE);
     } else if (cmd === 9) {
       emitNoteOn(noteNumber, vel, NoteOrigin.DEVICE);
+      setTimeout(() => {
+        emitNoteOff(noteNumber, NoteOrigin.DEVICE);
+      }, 700);
     } else if (cmd === 11 && noteNumber === 64) {
       if (vel > 0) {
         emitSustainOn(NoteOrigin.DEVICE);
